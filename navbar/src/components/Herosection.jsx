@@ -1,47 +1,46 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 
 function Herosection() {
+
+    const slides = [
+        { id: 1, img: "https://images.pexels.com/photos/12899191/pexels-photo-12899191.jpeg", text: "Welcome" },
+        { id: 2, img: "https://images.pexels.com/photos/12899156/pexels-photo-12899156.jpeg", text: "CSS" },
+        { id: 3, img: "https://images.pexels.com/photos/546819/pexels-photo-546819.jpeg", text: "Hello" },
+
+    ]
+    const [current, setCurrent] = useState(0)
+
+    const next = () => {
+        setCurrent(current === slides.length - 1 ? 0 : current + 1)
+    }
+    const previous = () => {
+        setCurrent(current === 0 ? slides.length - 1 : current - 1)
+    }
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrent(prev =>
+                prev === slides.length - 1 ? 0 : prev + 1
+            )
+        }, 1000)
+        return () => clearInterval(interval)
+
+    })
     return (
-        <div className="carousel w-full h-1/2">
-            <div id="slide1" className="carousel-item relative w-full">
-                <img
-                    src="https://img.daisyui.com/images/stock/photo-1625726411847-8cbb60cc71e6.webp"
-                    className="w-full" />
-                <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-                    <a href="#slide4" className="btn btn-circle">❮</a>
-                    <a href="#slide2" className="btn btn-circle">❯</a>
-                </div>
-            </div>
-            <div id="slide2" className="carousel-item relative w-full">
-                <img
-                    src="https://img.daisyui.com/images/stock/photo-1609621838510-5ad474b7d25d.webp"
-                    className="w-full" />
-                <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-                    <a href="#slide1" className="btn btn-circle">❮</a>
-                    <a href="#slide3" className="btn btn-circle">❯</a>
-                </div>
-            </div>
-            <div id="slide3" className="carousel-item relative w-full">
-                <img
-                    src="https://img.daisyui.com/images/stock/photo-1414694762283-acccc27bca85.webp"
-                    className="w-full" />
-                <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-                    <a href="#slide2" className="btn btn-circle">❮</a>
-                    <a href="#slide4" className="btn btn-circle">❯</a>
-                </div>
-            </div>
-            <div id="slide4" className="carousel-item relative w-full">
-                <img
-                    src="https://img.daisyui.com/images/stock/photo-1665553365602-b2fb8e5d1707.webp"
-                    className="w-full" />
-                <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
-                    <a href="#slide3" className="btn btn-circle">❮</a>
-                    <a href="#slide1" className="btn btn-circle">❯</a>
-                </div>
+
+        <div id="" className="relative w-full h-96">
+            <img
+                src={slides[current].img}
+                className="w-full h-full opacity-60" />
+            <h5 className='absolute flex justify-center items-center font-bold inset-0 text-gray-200 '>{slides[current].text}</h5>
+
+            <div className="absolute left-5 text-white right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+                <a href="#slide2" onClick={previous} className="text-white">❮</a>
+                <a href="#slide4" onClick={next} className="text-white">❯</a>
             </div>
         </div>
+
+
     )
 }
-
 export default Herosection

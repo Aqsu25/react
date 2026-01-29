@@ -1,16 +1,26 @@
-import Footer from "./components/Footer"
-import Hero from "./components/Hero"
-import Herosection from "./components/Herosection"
-import Navbar from "./components/Navbar"
+
+import React, { useEffect } from 'react'
+
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router'
+import Home from './Home'
+import Contact from './components/Contact'
+import Layout from './components/Layout'
+
 
 function App() {
+  useEffect(() => {
+    alert("Welcome :)")
 
+  })
   return (
-    <div>
-      <Navbar />
-      <Herosection />
-      <Footer />
-    </div>
+   
+      <Routes>
+        <Route path='/' element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path='contact' element={<Contact />} />
+        </Route>
+      </Routes>
+    
   )
 }
 

@@ -4,32 +4,54 @@ function Todo() {
     const [newtodo, setNewTodo] = useState("")
     const [todo, setTodo] = useState([])
     const addTodo = (e) => {
+        e.preventDefault();
+        if (newtodo) {
+            setTodo([...todo, { text: newtodo, completed: false }])
+            setNewTodo('')
+        }
+
 
     }
     const deleteTodo = (index) => {
 
+        const deleteTodo = ([...todo])
+        deleteTodo[index].completed = !deleteTodo[index].completed
+        setTodo(deleteTodo)
     }
     return (
-        <div className='flex flex-col items-center'>
-            <h1>Todo-Project</h1>
-            <div className="w-full max-w-xs px-auto my-5">
-                <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col gap-2 w-full max-w-xs">
-                    <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" for="username">
-                            Add Question
+        <div className='min-h-screen'>
+            <h1 className='text-teal-500'>Todo-Project</h1>
+            <div className="flex justify-center items-center mb-0 pb-0">
+                <form className="bg-white shadow-md rounded px-8 pt-6" onSubmit={addTodo}>
+                    <label className="block text-teal-500 text-sm font-bold mb-2">
+                        Add Question
 
-                        </label>
-                        <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="username" type="text" placeholder="Enter your question" />
+                    </label>
+                    <div className="mb-4 flex items-center border-b border-teal-500 py-2">
+                        <input value={newtodo}
+                            onChange={(e) => setNewTodo(e.target.value)}
+                            className="border bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none" id="username" type="text" placeholder="Enter your question" />
+                        <button className="flex-shrink-0 border-transparent bg-gray-100 border-4 text-teal-500 hover:text-teal-800 text-sm py-1 px-2 rounded" type="submit">
+                            Add
+                        </button>
                     </div>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
-                        Add
-                    </button>
                 </form>
-                <p className="text-center text-gray-500 text-xs">
-                    &copy;2020 Acme Corp. All rights reserved.
-                </p>
             </div>
+            {
+                todo.map((list, index) => (
+                    <ul className='text-black text-sm font-bold mb-2 mt-5 bt-0 flex items-center justify-center'>
+                        <div>
+                            <li key={index}>
+                                <span style={{ textDecoration: todo.completed ? 'line - through' : 'no - underline' }}>
+                                    {list.text}
+                                </span>
+                            </li>
+                            <button className='bg-red-500 inline text-white py-2 px-3 rounded mx-2' onClick={() => deleteTodo(index)}>Delete</button>
+                        </div>
+                    </ul>
+                ))
 
+            }
 
         </div>
     )
