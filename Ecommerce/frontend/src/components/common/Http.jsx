@@ -1,0 +1,1 @@
+export const apiUrl="http://backend.test/api"

@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
+
+class AuthenticatedSessionController extends Controller
+{
+    /**
+     * Handle an incoming authentication request.
+     */
+    public function store(LoginRequest $request)
+    {
+        try {
+            $request->authenticate();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Return proper JSON error instead of 405
+            return response()->json([
+                'status' => 401,
+                'message' => 'Invalid credentials',
+                'errors' => $e->errors()
+            ], 401);
+        }
+
+        $user = $request->user();
+
+        $abilities = $user->hasRole('admin') ? ['admin'] : ['user'];
+        $token = $user->createToken('auth_token', $abilities)->plainTextToken;
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'status' => 200,
+            'user' => $user
+        ]);
+    }
+
+
+    /**
+     * Destroy an authenticated session.
+     */
+    public function destroy(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();  // delete current token
+        return response()->json(['message' => 'Logged out']);
+    }
+}
