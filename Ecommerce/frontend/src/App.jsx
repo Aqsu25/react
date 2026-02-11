@@ -7,35 +7,129 @@ import Cart from './components/Cart/Cart';
 import Checkout from './components/Cart/Checkout/Checkout';
 import Contact from './components/Contact';
 import Login from './components/Admin/Login';
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/fontawesome.min.css" integrity="sha512-M5Kq4YVQrjg5c2wsZSn27Dkfm/2ALfxmun0vUE3mPiJyK53hQBHYCVAtvMYEC7ZXmYLg8DVG4tF8gD27WmDbsg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 import { ToastContainer, toast } from 'react-toastify';
 import Dashboard from './components/Admin/Dashboard';
 import { Adminrequireauth } from './components/Admin/Adminrequireauth';
+import { AdminAuthProvider } from './components/context/AdminAuth';
+import ShowCategory from './components/Admin/Category/ShowCategory';
+import CreateCategory from './components/Admin/Category/CreateCategory';
+import EditCategory from './components/Admin/Category/EditCategory';
+import Showbrand from './components/Admin/Brand/Showbrand';
+import Createbrand from './components/Admin/Brand/Createbrand';
+import Editbrand from './components/Admin/Brand/Editbrand';
+import ProductCreate from './components/Admin/Product/ProductCreate';
+import ProductShow from './components/Admin/Product/ProductShow';
+import ProductEdit from './components/Admin/Product/ProductEdit';
 
 function App() {
 
   return (
     <>
-           <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/product" element={<Product />} />
-          <Route path="/contact" element={<Contact />} />
+      <AdminAuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/product" element={<Product />} />
+            <Route path="/contact" element={<Contact />} />
 
-          <Route path="/admin/login" element={<Login />} />
-          <Route
-            path="/admin/dashboard"
-            element={
-              <Adminrequireauth>
-                <Dashboard />
-              </Adminrequireauth>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
+            <Route path="/admin/login" element={<Login />} />
+
+
+            <Route
+              path="/admin/dashboard"
+              element={
+                <Adminrequireauth>
+                  <Dashboard />
+                </Adminrequireauth>
+              }
+            />
+            {/* category-Routes */}
+            <Route
+              path="/admin/categories"
+              element={
+                <Adminrequireauth>
+                  <ShowCategory />
+                </Adminrequireauth>
+              }
+            />
+
+            <Route
+              path="/admin/categories/create"
+              element={
+                <Adminrequireauth>
+                  <CreateCategory />
+                </Adminrequireauth>
+              }
+            />
+
+            <Route
+              path="/admin/categories/edit/:id"
+              element={
+                <Adminrequireauth>
+                  <EditCategory />
+                </Adminrequireauth>
+              }
+            />
+            {/* brand-Routes */}
+
+            <Route
+              path="/admin/brands"
+              element={
+                <Adminrequireauth>
+                  <Showbrand />
+                </Adminrequireauth>
+              }
+            />
+            <Route
+              path="/admin/brands/create"
+              element={
+                <Adminrequireauth>
+                  <Createbrand />
+                </Adminrequireauth>
+              }
+            />
+            <Route
+              path=
+              "/admin/brands/:id/edit"
+              element={
+                <Adminrequireauth>
+                  <Editbrand />
+                </Adminrequireauth>
+              }
+            />
+            {/* product-Routes */}
+            <Route
+              path="/products"
+              element={
+                <Adminrequireauth>
+                  <ProductShow />
+                </Adminrequireauth>
+              }
+            />
+            <Route
+              path="/products/create"
+              element={
+                <Adminrequireauth>
+                  <ProductCreate />
+                </Adminrequireauth>
+              }
+            />
+            <Route
+              path=
+              "/products/:id/edit"
+              element={
+                <Adminrequireauth>
+                  <ProductEdit />
+                </Adminrequireauth>
+              }
+            />
+
+          </Routes>
+        </BrowserRouter>
+      </AdminAuthProvider>
       <ToastContainer />
     </>
   )
