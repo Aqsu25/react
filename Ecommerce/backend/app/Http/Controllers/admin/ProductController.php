@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\ProductImg;
 use App\Models\TempImg;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -39,17 +40,18 @@ class ProductController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required|min:3',
-            'description' => 'required',
+            'description' => 'nullable',
             'short_description' => 'required',
             'price' => 'required|numeric',
             'compare_price' => 'nullable|numeric',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'nullable|exists:brands,id',
             'qty' => 'nullable|integer',
-            'sku' => 'required|unique',
+            'sku' => 'required|unique:products,sku',
             'status' => 'required|integer',
             'is_Featured' => 'required|in:yes,no',
-            'image' => 'nullable|string'
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif',
+            'gallery' => 'nullable|array'
         ]);
 
         if ($validator->fails()) {
@@ -59,55 +61,59 @@ class ProductController extends Controller
             ], 400);
         }
 
+        // Create product first
         $product = Product::create([
             'title' => $request->title,
             'description' => $request->description,
             'short_description' => $request->short_description,
             'price' => $request->price,
             'compare_price' => $request->compare_price,
-            'image' => $request->image,
+            'image' => null, // will update later
             'category_id' => $request->category_id,
             'brand_id' => $request->brand_id,
             'qty' => $request->qty,
             'sku' => $request->sku,
             'status' => $request->status,
+            'barcode' => $request->barcode,
             'is_Featured' => $request->is_Featured,
         ]);
 
-        if (!empty($request->gallery)) {
+        // Handle main image
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('/uploads/products/'), $imageName);
+            $product->image = $imageName;
+            $product->save();
+        }
 
-            foreach ($request->gallery as $key => $tempimageId) {
-
-                $tempImg = TempImg::find($tempimageId);
-
-                if (!$tempImg) {
-                    continue;
-                }
+        // Handle gallery images
+        if (!empty($request->gallery) && is_array($request->gallery)) {
+            foreach ($request->gallery as $key => $tempId) {
+                $tempImg = TempImg::find($tempId);
+                if (!$tempImg) continue;
 
                 $imageName = time() . '_' . $tempImg->image;
+                rename(public_path('/uploads/temp/' . $tempImg->image), public_path('/uploads/products/' . $imageName));
 
-                $manager = new ImageManager(new Driver());
+                // Save in product images table
+                ProductImg::create(['product_id' => $product->id, 'image' => $imageName]);
 
-                $largeImg = $manager->read(public_path('uploads/temp/' . $tempImg->image));
-                $largeImg->scaleDown(1200);
-                $largeImg->save(public_path('uploads/products/large/' . $imageName));
-
-                $smallImg = $manager->read(public_path('uploads/temp/' . $tempImg->image));
-                $smallImg->cover(400, 460);
-                $smallImg->save(public_path('uploads/products/small/' . $imageName));
-
-                if ($key == 0) {
+                // Set first gallery image as main if no main image
+                if ($key == 0 && !$product->image) {
                     $product->image = $imageName;
                     $product->save();
                 }
+
+                $tempImg->delete(); // remove temp
             }
         }
 
         return response()->json([
             'status' => 200,
-            'message' => "Product Created Successfully!",
-            'data' => $product,
-        ], 200);
+            'message' => 'Product created successfully',
+            'data' => $product
+        ]);
     }
 
     // 
@@ -147,7 +153,7 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
         $validator = Validator::make($request->all(), [
             'title' => 'required|min:3',
-            'description' => 'required',
+            'description' => 'nullable',
             'short_description' => 'required',
             'price' => 'required|numeric',
             'compare_price' => 'nullable|numeric',
