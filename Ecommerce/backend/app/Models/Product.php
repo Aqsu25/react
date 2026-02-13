@@ -21,12 +21,5 @@ class Product extends Model
         'is_Featured',
     ];
 
-    protected $appends = ['image_Url'];
-
-    public function getimageUrlAttribute(){
-        if($this->image == ''){
-            return "";
-        }
-        return asset(`/uploads/products/small`.$this->image);
-    }
+   
 }

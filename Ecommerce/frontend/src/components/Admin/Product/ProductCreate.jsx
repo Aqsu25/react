@@ -15,16 +15,19 @@ function ProductCreate({ placeholder }) {
     const [brands, setBrands] = useState([]);
     const navigate = useNavigate();
     const [previewImages, setPreviewImages] = useState([]);
+    const [gallery, setGalleryIds] = useState([]);
+
 
     const config = useMemo(() => ({
         readonly: false,
         placeholder: placeholder || ''
     }), [placeholder]);
 
-    // Save product
+
     const saveProduct = async (data) => {
         try {
             const formData = new FormData();
+
             formData.append("title", data.title);
             formData.append("category_id", data.category_id);
             formData.append("brand_id", data.brand_id);
@@ -32,48 +35,67 @@ function ProductCreate({ placeholder }) {
             formData.append("description", description || "");
             formData.append("price", data.price);
             formData.append("compare_price", data.compare_price || "");
-            formData.append("sku", data.sku);
+            formData.append("sku", data.sku || "");
             formData.append("barcode", data.barcode || "");
             formData.append("qty", data.qty || 0);
             formData.append("status", data.status);
-            formData.append("is_Featured", data.is_Featured);
+            formData.append("is_Featured", data.is_Featured || 0);
 
-            // Append gallery images if any
-            const gallery = data.gallery || [];
-            gallery.forEach(id => formData.append('gallery[]', id));
+            // ✅ Append gallery array properly
+            if (Array.isArray(gallery) && gallery.length > 0) {
+                gallery.forEach((id, index) => {
+                    formData.append(`gallery[${index}]`, id);
+                });
+            }
 
             const res = await fetch(`${apiUrl}/products`, {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${adminToken()}`
+                    "Authorization": `Bearer ${adminToken()}`,
+                    "Accept": "application/json"
                 },
                 body: formData
             });
 
-            const result = await res.json();
+            // ✅ Read response safely
+            const text = await res.text();
+            let result;
 
+            try {
+                result = JSON.parse(text);
+            } catch (err) {
+                console.error("Server returned non-JSON response:", text);
+                toast.error("Server Error (500)");
+                return;
+            }
+
+            // ✅ Success
             if (res.ok) {
                 toast.success("Product Created Successfully");
-                navigate('/products');
-            } else {
-                toast.error(result.message || "Validation Error");
+                navigate("/products");
+            }
+            // ✅ Validation Errors (Laravel 422)
+            else if (res.status === 422 && result.errors) {
+                Object.values(result.errors).forEach(errorArray => {
+                    errorArray.forEach(message => {
+                        toast.error(message);
+                        console.log(message);
+                    });
+                });
+            }
+            // ✅ Other Errors
+            else {
+                toast.error(result.message || "Something went wrong");
+                console.log(result.message);
+
             }
 
         } catch (error) {
-            console.log(error);
-            if (error.response?.data?.errors) {
-                const fromError = error.response.data.errors;
-                Object.keys(fromError).forEach((field) => {
-                    setError(field, { message: fromError[field][0] });
-                    toast.error("Something Went Wrong!");
-                });
-            } else {
-                toast.error("Something Went Wrong!");
-            }
+            console.error("Unexpected Error:", error);
+            toast.error("Unexpected Server Error");
         }
     };
 
-    // Fetch categories
     const fetchCategory = async () => {
         try {
             const res = await fetch(`${apiUrl}/admin/categories`, {
@@ -92,7 +114,7 @@ function ProductCreate({ placeholder }) {
         }
     };
 
-    // Fetch brands
+
     const fetchBrand = async () => {
         try {
             const res = await fetch(`${apiUrl}/admin/brands`, {
@@ -111,36 +133,39 @@ function ProductCreate({ placeholder }) {
         }
     };
 
-    // Upload multiple images
+
     const uploadTempImages = async (e) => {
-        const newFiles = Array.from(e.target.files); // files just selected
-        const previews = [...previewImages]; // existing previews
-        const galleryIds = []; // for uploaded file IDs
+        const files = Array.from(e.target.files);
+        const previews = [...previewImages];
 
-        for (let i = 0; i < newFiles.length; i++) {
-            previews.push(URL.createObjectURL(newFiles[i])); // add preview
+        const formData = new FormData();
+        files.forEach(file => {
+            previews.push(URL.createObjectURL(file));
+            formData.append('image[]', file);
+        });
 
-            const formData = new FormData();
-            formData.append('image', newFiles[i]);
+        try {
+            const res = await axios.post(`${apiUrl}/temp-image`, formData, {
+                headers: {
+                    "Authorization": `Bearer ${adminToken()}`,
+                    "Content-Type": "multipart/form-data"
+                }
+            });
 
-            try {
-                const res = await axios.post(`${apiUrl}/temp-image`, formData, {
-                    headers: {
-                        "Authorization": `Bearer ${adminToken()}`,
-                        "Content-Type": "multipart/form-data"
-                    }
-                });
-                galleryIds.push(res.data.id); // collect uploaded temp IDs
-            } catch (err) {
-                console.log('Upload failed for:', newFiles[i].name, err.response?.data);
-            }
+            const newIds = res.data.ids;
+
+            setGalleryIds(prev => {
+                const updated = [...prev, ...newIds];
+                setValue('gallery', updated);
+                return updated;
+            });
+
+            setPreviewImages(previews);
+
+        } catch (err) {
+            console.log('Upload failed', err.response?.data);
+            toast.error("Image upload failed!");
         }
-
-        // Append new previews to old ones
-        setPreviewImages(previews);
-
-        // Append new gallery IDs to old ones
-        setValue('gallery', [...(formValue.gallery || []), ...galleryIds]);
     };
 
 
@@ -171,20 +196,43 @@ function ProductCreate({ placeholder }) {
                     <div className="flex flex-wrap -mx-3 mb-6">
                         <div className="w-full md:w-1/2 px-3 mb-6">
                             <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Category</label>
-                            <select {...register("category_id", { required: "Please select a category." })}
-                                className="block appearance-none w-full border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
-                                <option value="">Select a Category</option>
-                                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                            </select>
+
+                            <div className='relative'>
+                                <select {...register("category_id", { required: "Please select a category." })}
+                                    className="block appearance-none w-full border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                    <option value="">Select a Category</option>
+                                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <svg
+                                        className="fill-current h-4 w-4"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                    </svg>
+                                </div>
+                            </div>
                             {errors.category_id && <p className="text-red-500 text-sm">{errors.category_id.message}</p>}
                         </div>
                         <div className="w-full md:w-1/2 px-3 mb-6">
                             <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Brand</label>
-                            <select {...register("brand_id")}
-                                className="block appearance-none w-full border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
-                                <option value="">Select a Brand</option>
-                                {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                            </select>
+                            <div className='relative'>
+                                <select {...register("brand_id")}
+                                    className="block appearance-none w-full border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                    <option value="">Select a Brand</option>
+                                    {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <svg
+                                        className="fill-current h-4 w-4"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -227,14 +275,83 @@ function ProductCreate({ placeholder }) {
                         </div>
                     </div>
 
-                    {/* Gallery */}
+                    {/*qty and sku*/}
+                    <div className="flex flex-wrap -mx-3 mb-6">
+                        <div className="w-full md:w-1/2 px-3 mb-6">
+                            <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Qty</label>
+                            <input {...register("qty", { required: "The qty field is required." })}
+                                className="appearance-none block w-full text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" type="text" />
+                            {errors.qty && <p className="text-red-500 text-sm">{errors.qty.message}</p>}
+                        </div>
+                        <div className="w-full md:w-1/2 px-3 mb-6">
+                            <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Sku</label>
+                            <input {...register("sku", { required: "The sku code is required." })}
+                                className="appearance-none block w-full text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" type="text" />
+                            {errors.sku && <p className="text-red-500 text-sm">{errors.sku.message}</p>}
+                        </div>
+                    </div>
+                    {/* status */}
+                    <div className="flex flex-wrap -mx-3 mb-6">
+
+                        <div className="w-full px-3 mb-6">
+                            <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Status</label>
+                            <div className="relative">
+                                <select
+                                    {...register("status", { required: "Please select a status." })}
+                                    className="block appearance-none w-full border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                >
+                                    <option value="">Select a Status</option>
+                                    <option value="1">Active</option>
+                                    <option value="0">Block</option>
+                                </select>
+
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <svg
+                                        className="fill-current h-4 w-4"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status.message}</p>}
+                        </div>
+                    </div>
+                    {/* featured */}
+                    <div className="flex flex-wrap -mx-3 mb-6">
+
+                        <div className="w-full px-3 mb-6">
+                            <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Featured</label>
+                            <div className="relative">
+                                <select
+                                    {...register("is_Featured", { required: "Please select a status." })}
+                                    className="block appearance-none w-full border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                >
+                                    <option value="">Select</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <svg
+                                        className="fill-current h-4 w-4"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            {errors.is_Featured && <p className="text-red-500 text-sm mt-1">{errors.is_Featured.message}</p>}
+                        </div>
+                    </div>
                     <div className="flex flex-wrap -mx-3 mb-6">
                         <div className="w-full px-3 mb-6 md:mb-0">
                             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
                                 Images
                             </label>
 
-                            {/* Custom File Upload Box */}
                             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-400 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition">
 
                                 <span className="text-gray-600 text-sm font-medium">
@@ -253,7 +370,6 @@ function ProductCreate({ placeholder }) {
                                 />
                             </label>
 
-                            {/* Preview Images */}
                             <div className="flex flex-wrap mt-4">
                                 {previewImages.map((img, index) => (
                                     <img
@@ -273,8 +389,8 @@ function ProductCreate({ placeholder }) {
                         className='rounded-md bg-[#007595] py-2 px-6 mt-2 text-white hover:bg-[#005f66]'>
                         Submit
                     </button>
-                </form>
-            </Sample>
+                </form >
+            </Sample >
         </>
     );
 }

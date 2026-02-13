@@ -29,24 +29,31 @@ class TempController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-   public function store(Request $request)
-{
-    $request->validate([
-        'image.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'image.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
 
-    $ids = [];
-    if($request->hasFile('image')) {
-        foreach($request->file('image') as $file) {
-            $name = time().'_'.$file->getClientOriginalName();
-            $file->move(public_path('uploads/temp/'), $name);
-            $temp = TempImg::create(['image' => $name]);
-            $ids[] = $temp->id;
+        $ids = [];
+        $name = "";
+        if ($request->hasFile('image')) {
+            foreach ($request->file('image') as $file) {
+                $name = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('/uploads/temp/'), $name);
+                $temp = TempImg::create(['image' => $name]);
+                $ids[] = $temp->id;
+                $name = $temp->image;
+            }
         }
-    }
 
-    return response()->json(['status' => 200, 'ids' => $ids]);
-}
+        return response()->json([
+            'status' => 200,
+            'ids' => $ids,
+            'image' => $name,
+            'message' => "Image has uploaded successfully!",
+        ]);
+    }
 
 
     /**

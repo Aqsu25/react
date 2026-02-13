@@ -8,8 +8,7 @@ use App\Models\ProductImg;
 use App\Models\TempImg;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
+
 
 class ProductController extends Controller
 {
@@ -41,7 +40,7 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|min:3',
             'description' => 'nullable',
-            'short_description' => 'required',
+            'short_description' => 'nullable',
             'price' => 'required|numeric',
             'compare_price' => 'nullable|numeric',
             'category_id' => 'required|exists:categories,id',
@@ -61,14 +60,13 @@ class ProductController extends Controller
             ], 400);
         }
 
-        // Create product first
         $product = Product::create([
             'title' => $request->title,
             'description' => $request->description,
             'short_description' => $request->short_description,
             'price' => $request->price,
             'compare_price' => $request->compare_price,
-            'image' => null, // will update later
+            'image' => null,
             'category_id' => $request->category_id,
             'brand_id' => $request->brand_id,
             'qty' => $request->qty,
@@ -78,7 +76,6 @@ class ProductController extends Controller
             'is_Featured' => $request->is_Featured,
         ]);
 
-        // Handle main image
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
@@ -87,25 +84,30 @@ class ProductController extends Controller
             $product->save();
         }
 
-        // Handle gallery images
         if (!empty($request->gallery) && is_array($request->gallery)) {
             foreach ($request->gallery as $key => $tempId) {
                 $tempImg = TempImg::find($tempId);
                 if (!$tempImg) continue;
 
                 $imageName = time() . '_' . $tempImg->image;
-                rename(public_path('/uploads/temp/' . $tempImg->image), public_path('/uploads/products/' . $imageName));
+                $oldPath = public_path('/uploads/temp/' . $tempImg->image);
+                $newPath = public_path('/uploads/product/' . $imageName);
 
-                // Save in product images table
-                ProductImg::create(['product_id' => $product->id, 'image' => $imageName]);
+                if (file_exists($oldPath)) {
+                    rename($oldPath, $newPath);
 
-                // Set first gallery image as main if no main image
-                if ($key == 0 && !$product->image) {
-                    $product->image = $imageName;
-                    $product->save();
+                    ProductImg::create([
+                        'product_id' => $product->id,
+                        'name' => $imageName
+                    ]);
+
+                    if ($key == 0 && !$product->image) {
+                        $product->image = $imageName;
+                        $product->save();
+                    }
+
+                    $tempImg->delete();
                 }
-
-                $tempImg->delete(); // remove temp
             }
         }
 
