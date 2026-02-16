@@ -6,18 +6,21 @@ import { toast } from 'react-toastify';
 import { adminToken, apiUrl } from '../../common/Http';
 import { useNavigate, useParams } from 'react-router';
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleXmark } from '@fortawesome/free-solid-svg-icons'; // Specific icon import
 
 
 function ProductEdit({ placeholder }) {
   const editor = useRef(null);
   const [description, setDescription] = useState('');
-  const { register, handleSubmit, setValue, setError, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, setError, reset, formState: { errors } } = useForm();
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const navigate = useNavigate();
   const [previewImages, setPreviewImages] = useState([]);
   const [gallery, setGalleryIds] = useState([]);
-  const params=useParams();
+  const [productImages, setProductImage] = useState([]);
+  const params = useParams();
 
   const config = useMemo(() => ({
     readonly: false,
@@ -93,6 +96,34 @@ function ProductEdit({ placeholder }) {
       toast.error("Unexpected Server Error");
     }
   };
+  // fetchSingleCategory
+  const fetchSingleCategory = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/products/${params.id}`, {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+          "Accept": "application/json",
+          "Authorization": `Bearer ${adminToken()}`
+        },
+      });
+      const result = await res.json();
+      if (result.status == 200) {
+        const product = result.data;
+
+        reset(product)
+        // description
+        setDescription(product.description)
+        setProductImage(product.product_images)
+        // gallery
+      }
+    }
+    catch (error) {
+      console.error("Fetch error:", error);
+      toast.error("Something Went Wrong!");
+    }
+  }
+
   // fetchcategory
   const fetchCategory = async () => {
     try {
@@ -165,9 +196,15 @@ function ProductEdit({ placeholder }) {
       toast.error("Image upload failed!");
     }
   };
+  // deleteImage
+  const deleteImage = (productImg) => {
+    const newSetGallery = setGalleryIds(prev => prev.filter(gallery => gallery != productImg));
+    setGalleryIds(newSetGallery);
+  }
   useEffect(() => {
     fetchCategory();
     fetchBrand();
+    fetchSingleCategory();
   }, []);
 
   return (
@@ -368,14 +405,26 @@ function ProductEdit({ placeholder }) {
               </label>
 
               <div className="flex flex-wrap mt-4">
-                {previewImages.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt="preview"
-                    className="w-20 h-20 mr-2 mb-2 object-cover rounded border border-gray-300"
-                  />
-                ))}
+                {
+                  productImages &&
+                  productImages.map((productImg, index) => (
+                    <div key={index} className="relative">
+
+                      <img
+                        key={index}
+                        src={`${apiUrl.replace('/api', '')}/uploads/product/${productImg.name}`}
+                        alt="preview"
+                        className="w-20 h-20 mr-2 mb-2 object-cover rounded border border-gray-300"
+                      />
+                      <button
+                        type="button"
+                        className='absolute top-1 right-1'
+                        onClick={() => deleteImage(productImg)}
+                      >
+                        <FontAwesomeIcon size="lg" icon={faCircleXmark} className='text-red-500' />
+                      </button>
+                    </div>
+                  ))}
               </div>
 
             </div>

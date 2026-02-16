@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-      protected $fillable = [
+    protected $fillable = [
         'title',
         'description',
         'short_description',
@@ -20,6 +20,14 @@ class Product extends Model
         'status',
         'is_Featured',
     ];
+    // product-images
+    // function productImages()
+    // {
+    //     return $this->hasMany(ProductImg::class);
+    // }
 
-   
+    public function product_images()
+    {
+        return $this->hasMany(ProductImg::class);
+    }
 }

@@ -6,6 +6,10 @@ import { toast } from 'react-toastify';
 import { adminToken, apiUrl } from '../../common/Http';
 import { useNavigate } from 'react-router';
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleXmark } from '@fortawesome/free-solid-svg-icons'; // Specific icon import
+
+
 
 function ProductCreate({ placeholder }) {
     const editor = useRef(null);
@@ -23,7 +27,7 @@ function ProductCreate({ placeholder }) {
         placeholder: placeholder || ''
     }), [placeholder]);
 
-
+    // saveproduct
     const saveProduct = async (data) => {
         try {
             const formData = new FormData();
@@ -41,7 +45,6 @@ function ProductCreate({ placeholder }) {
             formData.append("status", data.status);
             formData.append("is_Featured", data.is_Featured || 0);
 
-            // ✅ Append gallery array properly
             if (Array.isArray(gallery) && gallery.length > 0) {
                 gallery.forEach((id, index) => {
                     formData.append(`gallery[${index}]`, id);
@@ -57,7 +60,6 @@ function ProductCreate({ placeholder }) {
                 body: formData
             });
 
-            // ✅ Read response safely
             const text = await res.text();
             let result;
 
@@ -69,12 +71,11 @@ function ProductCreate({ placeholder }) {
                 return;
             }
 
-            // ✅ Success
             if (res.ok) {
                 toast.success("Product Created Successfully");
                 navigate("/products");
             }
-            // ✅ Validation Errors (Laravel 422)
+
             else if (res.status === 422 && result.errors) {
                 Object.values(result.errors).forEach(errorArray => {
                     errorArray.forEach(message => {
@@ -83,7 +84,7 @@ function ProductCreate({ placeholder }) {
                     });
                 });
             }
-            // ✅ Other Errors
+
             else {
                 toast.error(result.message || "Something went wrong");
                 console.log(result.message);
@@ -95,7 +96,7 @@ function ProductCreate({ placeholder }) {
             toast.error("Unexpected Server Error");
         }
     };
-
+    // fetchcategory
     const fetchCategory = async () => {
         try {
             const res = await fetch(`${apiUrl}/admin/categories`, {
@@ -114,7 +115,7 @@ function ProductCreate({ placeholder }) {
         }
     };
 
-
+    // fetchbrand
     const fetchBrand = async () => {
         try {
             const res = await fetch(`${apiUrl}/admin/brands`, {
@@ -133,7 +134,7 @@ function ProductCreate({ placeholder }) {
         }
     };
 
-
+    // image
     const uploadTempImages = async (e) => {
         const files = Array.from(e.target.files);
         const previews = [...previewImages];
@@ -167,7 +168,11 @@ function ProductCreate({ placeholder }) {
             toast.error("Image upload failed!");
         }
     };
-
+    // deleteImage
+    const deleteImage = (image) => {
+        const newSetGallery = setGalleryIds(prev => prev.filter(gallery => gallery != image));
+        setGalleryIds(newSetGallery);
+    }
 
     useEffect(() => {
         fetchCategory();
@@ -372,23 +377,29 @@ function ProductCreate({ placeholder }) {
 
                             <div className="flex flex-wrap mt-4">
                                 {previewImages.map((img, index) => (
-                                    <img
-                                        key={index}
-                                        src={img}
-                                        alt="preview"
-                                        className="w-20 h-20 mr-2 mb-2 object-cover rounded border border-gray-300"
-                                    />
+                                    <div key={index} className="relative">
+                                        <img
+                                            src={img}
+                                            alt="preview"
+                                            className="w-20 h-20 mr-2 mb-2 object-cover rounded border border-gray-300"
+                                        />
+                                        <button
+                                            type="button"
+                                            className='absolute top-1 right-1 z-50'
+                                            onClick={() => deleteImage(img)}
+                                        >
+                                            <FontAwesomeIcon size="lg" icon={faCircleXmark} className='text-red-500' />
+                                        </button>
+                                    </div>
                                 ))}
                             </div>
 
                         </div>
+                        <button type="submit"
+                            className='rounded-md bg-[#007595] py-2 px-6 mt-2 text-white hover:bg-[#005f66]'>
+                            Submit
+                        </button>
                     </div>
-
-
-                    <button type="submit"
-                        className='rounded-md bg-[#007595] py-2 px-6 mt-2 text-white hover:bg-[#005f66]'>
-                        Submit
-                    </button>
                 </form >
             </Sample >
         </>

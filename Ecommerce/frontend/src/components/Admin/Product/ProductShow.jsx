@@ -18,7 +18,7 @@ function ProductShow() {
   const deleteproduct = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
 
-    const res = await fetch(`${apiUrl}/admin/products/${id}`, {
+    const res = await fetch(`${apiUrl}/products/${id}`, {
       method: "DELETE",
       headers: {
         'Content-Type': 'application/json',

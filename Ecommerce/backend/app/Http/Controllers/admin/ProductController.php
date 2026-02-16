@@ -17,7 +17,8 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::orderBy('created_at', 'ASC')->get();
+        $products = Product::with('product_images')->
+        orderBy('created_at', 'ASC')->get();
         return response()->json([
             'status' => 200,
             'data' => $products,
@@ -126,7 +127,7 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('product_images')->findOrFail($id);
 
         return response()->json([
             'status' => 200,
