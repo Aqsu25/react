@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\TempImg;
+use App\Traits\ImageUpload;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
+
 
 class TempController extends Controller
 {
+    use ImageUpload;
     /**
      * Display a listing of the resource.
      */
@@ -36,22 +36,21 @@ class TempController extends Controller
         ]);
 
         $ids = [];
-        $name = "";
+        $imageName = "";
         if ($request->hasFile('image')) {
             foreach ($request->file('image') as $file) {
-                $name = time() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('/uploads/temp/'), $name);
-                $temp = TempImg::create(['image' => $name]);
+                $imageName = $this->tempImage($file, 'temp');
+                $temp = TempImg::create(['image' => $imageName]);
                 $ids[] = $temp->id;
-                $name = $temp->image;
+                $imageName = $temp->image;
             }
         }
 
         return response()->json([
             'status' => 200,
             'ids' => $ids,
-            'image' => $name,
-            'message' => "Image has uploaded successfully!",
+            'image' => $imageName,
+            'message' => "Image has uploaded successfully in temp!",
         ]);
     }
 

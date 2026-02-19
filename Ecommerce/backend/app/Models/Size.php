@@ -7,4 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Size extends Model
 {
     protected $fillable = ['name'];
+
+     public function product()
+    {
+
+        return $this->belongsToMany(Product::class,'product_sizes','size_id','product_id');
+    }
 }

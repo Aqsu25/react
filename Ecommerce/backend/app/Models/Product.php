@@ -18,16 +18,26 @@ class Product extends Model
         'qty',
         'sku',
         'status',
+        'barcode',
         'is_Featured',
     ];
-    // product-images
-    // function productImages()
-    // {
-    //     return $this->hasMany(ProductImg::class);
-    // }
+    protected $appends = ['image_url'];
 
     public function product_images()
     {
         return $this->hasMany(ProductImg::class);
+    }
+
+    public function product_sizes()
+    {
+        return $this->belongsToMany(Size::class,'product_sizes','product_id','size_id');
+    }
+    // img-url
+    public function getImageUrlAttribute()
+    {
+        if (!$this->image) {
+            return null;
+        }
+        return asset('storage/product/' . $this->image);
     }
 }

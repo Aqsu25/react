@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { toast } from 'react-toastify';
 import { adminToken, apiUrl } from '../../common/Http';
 import { useNavigate, useParams } from 'react-router';
-import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons'; // Specific icon import
 
@@ -13,90 +12,99 @@ import { faCircleXmark } from '@fortawesome/free-solid-svg-icons'; // Specific i
 function ProductEdit({ placeholder }) {
   const editor = useRef(null);
   const [description, setDescription] = useState('');
-  const { register, handleSubmit, setValue, setError, reset, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const navigate = useNavigate();
-  const [previewImages, setPreviewImages] = useState([]);
-  const [gallery, setGalleryIds] = useState([]);
-  const [productImages, setProductImage] = useState([]);
+  // 
   const params = useParams();
+
+  // oldimages in db
+  const [oldImages, setOldImages] = useState([]);
+
+  // new-image create
+  const [newImages, setNewImages] = useState([]);
+  // sizes
+  const [sizes, setSizes] = useState([]);
+
+
+
+
+
 
   const config = useMemo(() => ({
     readonly: false,
     placeholder: placeholder || ''
   }), [placeholder]);
 
-  // updateproduct
+  // update
   const updatedProduct = async (data) => {
+    console.log("Form Data before sending:", data);
+
     try {
       const formData = new FormData();
 
       formData.append("title", data.title);
-      formData.append("category_id", data.category_id);
-      formData.append("brand_id", data.brand_id);
+      formData.append("category_id", parseInt(data.category_id));
+      if (data.brand_id) {
+        formData.append("brand_id", data.brand_id);
+      }
+
+      formData.append("status", data.status);
       formData.append("short_description", data.short_description || "");
       formData.append("description", description || "");
       formData.append("price", data.price);
-      formData.append("compare_price", data.compare_price || "");
+      if (data.compare_price) {
+        formData.append("compare_price", data.compare_price);
+      }
       formData.append("sku", data.sku || "");
       formData.append("barcode", data.barcode || "");
-      formData.append("qty", data.qty || 0);
-      formData.append("status", data.status);
-      formData.append("is_Featured", data.is_Featured || 0);
-
-      if (Array.isArray(gallery) && gallery.length > 0) {
-        gallery.forEach((id, index) => {
-          formData.append(`gallery[${index}]`, id);
-        });
+      formData.append("qty", Number(data.qty));
+      formData.append("is_Featured", data.is_Featured || "no");
+      // old-imgs id send to backend
+      oldImages.forEach(img => formData.append("old_image_ids[]", img.id));
+      // new-images file
+      newImages.forEach(img => formData.append("new_images[]", img.file));
+      // sizes array
+      // Append sizes to FormData
+      if (data.sizes && data.sizes.length > 0) {
+        data.sizes.forEach(sizeId => formData.append('sizes[]', sizeId));
       }
 
-      const res = await fetch(`${apiUrl}/products`, {
+      // backend update
+      formData.append('_method', "PUT");
+      const res = await fetch(`${apiUrl}/products/${params.id}`, {
         method: "POST",
         headers: {
+
           "Authorization": `Bearer ${adminToken()}`,
-          "Accept": "application/json"
         },
         body: formData
       });
+      //convert into js obj or arr 
+      const result = await res.json();
+      console.log("Result:", result);
 
-      const text = await res.text();
-      let result;
-
-      try {
-        result = JSON.parse(text);
-      } catch (err) {
-        console.error("Server returned non-JSON response:", text);
-        toast.error("Server Error (500)");
-        return;
-      }
+      // const result = JSON.parse(text);
 
       if (res.ok) {
-        toast.success("Product Created Successfully");
+        toast.success("Product Updated Successfully");
         navigate("/products");
-      }
-
-      else if (res.status === 422 && result.errors) {
-        Object.values(result.errors).forEach(errorArray => {
-          errorArray.forEach(message => {
-            toast.error(message);
-            console.log(message);
-          });
-        });
-      }
-
-      else {
+      } else {
         toast.error(result.message || "Something went wrong");
-        console.log(result.message);
-
       }
 
     } catch (error) {
-      console.error("Unexpected Error:", error);
-      toast.error("Unexpected Server Error");
+      console.error(error);
+
+      console.log("API URL:", apiUrl);
+
+      toast.error("Unexpected server error");
     }
   };
-  // fetchSingleCategory
+
+
+  // fetchSingleCategory for edit page
   const fetchSingleCategory = async () => {
     try {
       const res = await fetch(`${apiUrl}/products/${params.id}`, {
@@ -110,12 +118,17 @@ function ProductEdit({ placeholder }) {
       const result = await res.json();
       if (result.status == 200) {
         const product = result.data;
+        reset({
+          ...product,
+          sizes: product.product_sizes
+            ? product.product_sizes.map(size => String(size.id))
+            : []
+        })
 
-        reset(product)
         // description
         setDescription(product.description)
-        setProductImage(product.product_images)
-        // gallery
+        // old-images
+        setOldImages(product.product_images || [])
       }
     }
     catch (error) {
@@ -162,50 +175,94 @@ function ProductEdit({ placeholder }) {
     }
   };
 
-  // image
-  const uploadTempImages = async (e) => {
-    const files = Array.from(e.target.files);
-    const previews = [...previewImages];
-
-    const formData = new FormData();
-    files.forEach(file => {
-      previews.push(URL.createObjectURL(file));
-      formData.append('image[]', file);
-    });
-
+  // fetchsizes
+  const fetchSizes = async () => {
     try {
-      const res = await axios.post(`${apiUrl}/temp-image`, formData, {
+      const res = await fetch(`${apiUrl}/sizes`, {
+        method: "GET",
         headers: {
-          "Authorization": `Bearer ${adminToken()}`,
-          "Content-Type": "multipart/form-data"
-        }
+          'Content-Type': 'application/json',
+          "Accept": "application/json",
+          "Authorization": `Bearer ${adminToken()}`
+        },
       });
-
-      const newIds = res.data.ids;
-
-      setGalleryIds(prev => {
-        const updated = [...prev, ...newIds];
-        setValue('gallery', updated);
-        return updated;
-      });
-
-      setPreviewImages(previews);
-
-    } catch (err) {
-      console.log('Upload failed', err.response?.data);
-      toast.error("Image upload failed!");
+      const result = await res.json();
+      console.log(result)
+      if (result.status === 200) setSizes(result.data);
+    } catch (error) {
+      console.error("Fetch error:", error);
+      toast.error("Something Went Wrong!");
     }
   };
+
+
   // deleteImage
-  const deleteImage = (productImg) => {
-    const newSetGallery = setGalleryIds(prev => prev.filter(gallery => gallery != productImg));
-    setGalleryIds(newSetGallery);
+  const deleteImage = async (type, id) => {
+    try {
+      const res = await fetch(`${apiUrl}/productimg-delete/${id}`, {
+        method: "DELETE",
+        headers: {
+          'Content-Type': 'application/json',
+          "Accept": "application/json",
+          "Authorization": `Bearer ${adminToken()}`
+        },
+      });
+      const result = await res.json();
+      console.log(result)
+      if (result.status === 200)
+        try {
+          if (type === 'old') {
+            setOldImages(prev => prev.filter(value => value.id != id));
+
+          } else {
+            setNewImages(newImages.filter(img => img.id != id));
+          }
+          toast.success(result.message);
+        }
+        catch (error) {
+          toast.error(result.message);
+
+        }
+
+    } catch (error) {
+      console.error("Fetch error:", error);
+      toast.error(result.message);
+
+    }
   }
+
+
+
+  const defaultImage = async (name) => {
+    console.log(name)
+    try {
+      const res = await fetch(`${apiUrl}/defaultImage/product_id=${params.id}/&image=${name}`, {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+          "Accept": "application/json",
+          "Authorization": `Bearer ${adminToken()}`
+        },
+      });
+      const result = await res.json();
+      if (result.status === 200)
+        toast.success(result.message);
+    } catch (error) {
+      console.error("Fetch error:", error);
+      toast.error("Something Went Wrong!");
+    }
+  };
+
+
   useEffect(() => {
     fetchCategory();
     fetchBrand();
     fetchSingleCategory();
+    fetchSizes();
   }, []);
+
+
+
 
   return (
 
@@ -213,6 +270,7 @@ function ProductEdit({ placeholder }) {
       <Sample title='Product/Edit' btnText='Back' to='/products'>
         <form onSubmit={handleSubmit(updatedProduct)}>
           {/* Title */}
+
           <div className="flex flex-wrap -mx-3 mb-6">
             <div className="w-full px-3 mb-6 md:mb-0">
               <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Title</label>
@@ -315,7 +373,6 @@ function ProductEdit({ placeholder }) {
               <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Qty</label>
               <input {...register("qty", { required: "The qty field is required." })}
                 className="appearance-none block w-full text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" type="text" />
-              {errors.qty && <p className="text-red-500 text-sm">{errors.qty.message}</p>}
             </div>
             <div className="w-full md:w-1/2 px-3 mb-6">
               <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Sku</label>
@@ -362,6 +419,7 @@ function ProductEdit({ placeholder }) {
                   {...register("is_Featured", { required: "Please select a status." })}
                   className="block appearance-none w-full border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                 >
+
                   <option value="">Select</option>
                   <option value="yes">Yes</option>
                   <option value="no">No</option>
@@ -380,59 +438,117 @@ function ProductEdit({ placeholder }) {
               {errors.is_Featured && <p className="text-red-500 text-sm mt-1">{errors.is_Featured.message}</p>}
             </div>
           </div>
+          {/* CHECKOX */}
           <div className="flex flex-wrap -mx-3 mb-6">
-            <div className="w-full px-3 mb-6 md:mb-0">
-              <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
-                Images
+            <div className="px-3 mb-6 w-full">
+              <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">
+                Size
               </label>
 
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-400 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition">
+              <div className="flex flex-wrap -mx-2">
+                {sizes.map((size) => (
+                  <label
+                    key={size.id}
+                    className="flex items-center px-2 mb-2 w-full sm:w-1/2 md:w-1/3 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      value={size.id}
+                      className="md:w-5 md:h-5 w-3 h-3 mx-2"
+                      {...register("sizes", { required: "Please select a size." })}
+                    />
+                    <span>{size.name}</span>
+                  </label>
+                ))}
+              </div>
 
-                <span className="text-gray-600 text-sm font-medium">
-                  Choose Files
-                </span>
+              {errors.sizes && (
+                <p className="text-red-500 text-sm mt-1">{errors.sizes.message}</p>
+              )}
+            </div>
+          </div>
+          {/* Images */}
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-3 text-gray-700">Product Images</h3>
 
-                <span className="text-gray-500 text-xs mt-1">
-                  or drag and drop images here
-                </span>
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-400 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition">
+              <span className="text-gray-600 text-sm font-medium">Choose Files</span>
+              <span className="text-gray-500 text-xs mt-1">or drag and drop images here</span>
+              <input
+                type="file"
+                multiple
+                onChange={(e) => {
+                  const files = Array.from(e.target.files);
+                  const preview = files.map(file => ({
+                    file,
+                    preview: URL.createObjectURL(file)
+                  }));
+                  setNewImages(prev => [...prev, ...preview]);
+                }}
+                className="hidden"
+              />
+            </label>
 
-                <input
-                  type="file"
-                  multiple
-                  onChange={uploadTempImages}
-                  className="hidden"
-                />
-              </label>
+            {/* Existing Images */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+              {oldImages.map((img) => (
+                <div className='w-full' key={img.id}>
+                  <div className="relative group rounded-xl shadow-md">
+                    <img src={`http://backend.test/storage/product/${img.name}`}
+                      alt="old"
+                      className="w-full h-32 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => deleteImage('old', img.id)}
+                      className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md"
+                    >
+                      <FontAwesomeIcon icon={faCircleXmark} className="text-red-500 text-lg" />
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => defaultImage(img.name)}
+                    className="bg-[#007595] rounded-lg p-1 w-full mt-5 text-white shadow-md"
+                  >Set as Default
+                  </button>
+                </div>
+              ))}
+            </div>
 
-              <div className="flex flex-wrap mt-4">
-                {
-                  productImages &&
-                  productImages.map((productImg, index) => (
-                    <div key={index} className="relative">
-
+            {/* New Images */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+              {newImages.map((img, index) => (
+                <div className='w-full'>
+                  <div key={index} className="relative group rounded-xl overflow-hidden shadow-md">
+                    <div>
                       <img
-                        key={index}
-                        src={`${apiUrl.replace('/api', '')}/uploads/product/${productImg.name}`}
-                        alt="preview"
-                        className="w-20 h-20 mr-2 mb-2 object-cover rounded border border-gray-300"
+                        src={img.preview}
+                        alt="new"
+                        className="w-full h-32 object-cover"
                       />
                       <button
                         type="button"
-                        className='absolute top-1 right-1'
-                        onClick={() => deleteImage(productImg)}
+                        onClick={() => deleteImage('new', img.id)}
+                        className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md"
                       >
-                        <FontAwesomeIcon size="lg" icon={faCircleXmark} className='text-red-500' />
+                        <FontAwesomeIcon icon={faCircleXmark} className="text-red-500 text-lg" />
                       </button>
                     </div>
-                  ))}
-              </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => defaultImage(img.name)}
+                    className="bg-[#007595] rounded-lg p-1 w-full mt-7 text-white shadow-md"
+                  >Set as Default
+                  </button>
 
+                </div>
+              ))}
             </div>
           </div>
-
-
           <button type="submit"
-            className='rounded-md bg-[#007595] py-2 px-6 mt-2 text-white hover:bg-[#005f66]'>
+            className='rounded-md bg-[#007595] py-2 px-6 mt-5 text-white hover:bg-[#005f66]'>
             Update
           </button>
         </form >

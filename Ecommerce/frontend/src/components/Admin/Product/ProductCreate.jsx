@@ -8,18 +8,25 @@ import { useNavigate } from 'react-router';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons'; // Specific icon import
+import { MultiSelect } from 'primereact/multiselect';
+
 
 
 
 function ProductCreate({ placeholder }) {
     const editor = useRef(null);
     const [description, setDescription] = useState('');
-    const { register, handleSubmit, setValue, setError, formState: { errors } } = useForm();
+    const { register, handleSubmit, setValue, formState: { errors } } = useForm();
     const [categories, setCategories] = useState([]);
     const [brands, setBrands] = useState([]);
     const navigate = useNavigate();
     const [previewImages, setPreviewImages] = useState([]);
+    // id from backend
     const [gallery, setGalleryIds] = useState([]);
+
+    // sizes
+    const [sizes, setSizes] = useState([]);
+
 
 
     const config = useMemo(() => ({
@@ -29,9 +36,9 @@ function ProductCreate({ placeholder }) {
 
     // saveproduct
     const saveProduct = async (data) => {
+        console.log(data)
         try {
             const formData = new FormData();
-
             formData.append("title", data.title);
             formData.append("category_id", data.category_id);
             formData.append("brand_id", data.brand_id);
@@ -41,9 +48,14 @@ function ProductCreate({ placeholder }) {
             formData.append("compare_price", data.compare_price || "");
             formData.append("sku", data.sku || "");
             formData.append("barcode", data.barcode || "");
-            formData.append("qty", data.qty || 0);
+            formData.append("qty", Number(data.qty));
             formData.append("status", data.status);
-            formData.append("is_Featured", data.is_Featured || 0);
+            formData.append("is_Featured", data.is_Featured);
+
+            // Append sizes to FormData
+            if (data.sizes && data.sizes.length > 0) {
+                data.sizes.forEach(sizeId => formData.append('sizes[]', sizeId));
+            }
 
             if (Array.isArray(gallery) && gallery.length > 0) {
                 gallery.forEach((id, index) => {
@@ -55,24 +67,24 @@ function ProductCreate({ placeholder }) {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${adminToken()}`,
-                    "Accept": "application/json"
+                    "Accept": "application/json",
+
                 },
                 body: formData
             });
-
             const text = await res.text();
-            let result;
+            console.log(text);
 
+            let result;
             try {
                 result = JSON.parse(text);
             } catch (err) {
-                console.error("Server returned non-JSON response:", text);
-                toast.error("Server Error (500)");
-                return;
+                console.error("Not JSON:", text);
             }
+            console.log(result);
 
             if (res.ok) {
-                toast.success("Product Created Successfully");
+                toast.success(result.message);
                 navigate("/products");
             }
 
@@ -95,7 +107,8 @@ function ProductCreate({ placeholder }) {
             console.error("Unexpected Error:", error);
             toast.error("Unexpected Server Error");
         }
-    };
+    }
+
     // fetchcategory
     const fetchCategory = async () => {
         try {
@@ -128,6 +141,26 @@ function ProductCreate({ placeholder }) {
             });
             const result = await res.json();
             if (result.status === 200) setBrands(result.data);
+        } catch (error) {
+            console.error("Fetch error:", error);
+            toast.error("Something Went Wrong!");
+        }
+    };
+
+    // fetchsizes
+    const fetchSizes = async () => {
+        try {
+            const res = await fetch(`${apiUrl}/sizes`, {
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${adminToken()}`
+                },
+            });
+            const result = await res.json();
+            console.log(result)
+            if (result.status === 200) setSizes(result.data);
         } catch (error) {
             console.error("Fetch error:", error);
             toast.error("Something Went Wrong!");
@@ -168,15 +201,22 @@ function ProductCreate({ placeholder }) {
             toast.error("Image upload failed!");
         }
     };
-    // deleteImage
-    const deleteImage = (image) => {
-        const newSetGallery = setGalleryIds(prev => prev.filter(gallery => gallery != image));
-        setGalleryIds(newSetGallery);
+
+    // delete-images
+    const deleteImage = (index) => {
+        // setPreviewImages
+        setPreviewImages(prev => prev.filter((_, i) => i !== index));
+        // gallery id delete
+        setGalleryIds(prev => prev.filter((_, i) => i !== index));
+
     }
+
 
     useEffect(() => {
         fetchCategory();
         fetchBrand();
+        fetchSizes();
+
     }, []);
 
     return (
@@ -196,7 +236,7 @@ function ProductCreate({ placeholder }) {
                             {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
                         </div>
                     </div>
-
+                 
                     {/* Category & Brand */}
                     <div className="flex flex-wrap -mx-3 mb-6">
                         <div className="w-full md:w-1/2 px-3 mb-6">
@@ -220,6 +260,7 @@ function ProductCreate({ placeholder }) {
                             </div>
                             {errors.category_id && <p className="text-red-500 text-sm">{errors.category_id.message}</p>}
                         </div>
+
                         <div className="w-full md:w-1/2 px-3 mb-6">
                             <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Brand</label>
                             <div className='relative'>
@@ -286,7 +327,6 @@ function ProductCreate({ placeholder }) {
                             <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Qty</label>
                             <input {...register("qty", { required: "The qty field is required." })}
                                 className="appearance-none block w-full text-black border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" type="text" />
-                            {errors.qty && <p className="text-red-500 text-sm">{errors.qty.message}</p>}
                         </div>
                         <div className="w-full md:w-1/2 px-3 mb-6">
                             <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Sku</label>
@@ -330,7 +370,7 @@ function ProductCreate({ placeholder }) {
                             <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">Featured</label>
                             <div className="relative">
                                 <select
-                                    {...register("is_Featured", { required: "Please select a status." })}
+                                    {...register("is_Featured", { required: "Please select at least one." })}
                                     className="block appearance-none w-full border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                                 >
                                     <option value="">Select</option>
@@ -351,6 +391,37 @@ function ProductCreate({ placeholder }) {
                             {errors.is_Featured && <p className="text-red-500 text-sm mt-1">{errors.is_Featured.message}</p>}
                         </div>
                     </div>
+                    {/* CHECKBOX */}
+                    <div className="flex flex-wrap -mx-3 mb-6">
+                        <div className="px-3 mb-6 w-full">
+                            <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2">
+                                Size
+                            </label>
+
+                            <div className="flex flex-wrap -mx-2">
+                                {sizes.map((size) => (
+                                    <label
+                                        key={size.id}
+                                        className="flex items-center px-2 mb-2 w-full sm:w-1/2 md:w-1/3 cursor-pointer"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            value={size.id}
+                                            className="md:w-5 md:h-5 w-3 h-3 mr-2"
+                                            {...register("sizes", { required: "Please select a size." })}
+                                        />
+                                        <span>{size.name}</span>
+                                    </label>
+                                ))}
+                            </div>
+
+                            {errors.sizes && (
+                                <p className="text-red-500 text-sm mt-1">{errors.sizes.message}</p>
+                            )}
+                        </div>
+                    </div>
+
+
                     <div className="flex flex-wrap -mx-3 mb-6">
                         <div className="w-full px-3 mb-6 md:mb-0">
                             <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
@@ -375,31 +446,31 @@ function ProductCreate({ placeholder }) {
                                 />
                             </label>
 
-                            <div className="flex flex-wrap mt-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
                                 {previewImages.map((img, index) => (
-                                    <div key={index} className="relative">
+                                    <div key={index} className="relative group rounded-xl overflow-hidden shadow-md">
                                         <img
                                             src={img}
-                                            alt="preview"
-                                            className="w-20 h-20 mr-2 mb-2 object-cover rounded border border-gray-300"
+                                            alt="new"
+                                            className="w-full h-32 object-cover"
                                         />
                                         <button
                                             type="button"
-                                            className='absolute top-1 right-1 z-50'
-                                            onClick={() => deleteImage(img)}
+                                            onClick={() => deleteImage(index)}
+                                            className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md"
                                         >
-                                            <FontAwesomeIcon size="lg" icon={faCircleXmark} className='text-red-500' />
+                                            <FontAwesomeIcon icon={faCircleXmark} className="text-red-500 text-lg" />
                                         </button>
                                     </div>
                                 ))}
                             </div>
-
                         </div>
-                        <button type="submit"
-                            className='rounded-md bg-[#007595] py-2 px-6 mt-2 text-white hover:bg-[#005f66]'>
-                            Submit
-                        </button>
                     </div>
+
+                    <button type="submit"
+                        className='rounded-md bg-[#007595] py-2 px-6 mt-2 text-white hover:bg-[#005f66]'>
+                        Submit
+                    </button>
                 </form >
             </Sample >
         </>

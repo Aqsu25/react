@@ -5,20 +5,24 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductImg;
+use App\Models\ProductSize;
 use App\Models\TempImg;
+use App\Traits\ImageUpload;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-
+use Mews\Purifier\Facades\Purifier;
 
 class ProductController extends Controller
 {
+    use ImageUpload;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $products = Product::with('product_images')->
-        orderBy('created_at', 'ASC')->get();
+        $products = Product::with(['product_images', 'product_sizes'])->orderBy('created_at', 'ASC')->get();
+
         return response()->json([
             'status' => 200,
             'data' => $products,
@@ -50,8 +54,9 @@ class ProductController extends Controller
             'sku' => 'required|unique:products,sku',
             'status' => 'required|integer',
             'is_Featured' => 'required|in:yes,no',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif',
-            'gallery' => 'nullable|array'
+            'gallery' => 'nullable|array',
+            'sizes' => 'required|array',
+            'sizes.*' => 'integer|exists:sizes,id',
         ]);
 
         if ($validator->fails()) {
@@ -60,14 +65,14 @@ class ProductController extends Controller
                 'errors' => $validator->errors()
             ], 400);
         }
+        $clean = Purifier::clean($request->description);
 
         $product = Product::create([
             'title' => $request->title,
-            'description' => $request->description,
+            'description' => $clean,
             'short_description' => $request->short_description,
             'price' => $request->price,
             'compare_price' => $request->compare_price,
-            'image' => null,
             'category_id' => $request->category_id,
             'brand_id' => $request->brand_id,
             'qty' => $request->qty,
@@ -76,37 +81,41 @@ class ProductController extends Controller
             'barcode' => $request->barcode,
             'is_Featured' => $request->is_Featured,
         ]);
-
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('/uploads/products/'), $imageName);
-            $product->image = $imageName;
-            $product->save();
+        // sizes array
+        if (!empty($request->sizes)) {
+            foreach ($request->sizes as $sizeId) {
+                ProductSize::create([
+                    'product_id' => $product->id,
+                    'size_id' => $sizeId,
+                ]);
+            }
         }
-
+        // Handle gallery images
         if (!empty($request->gallery) && is_array($request->gallery)) {
             foreach ($request->gallery as $key => $tempId) {
                 $tempImg = TempImg::find($tempId);
                 if (!$tempImg) continue;
 
-                $imageName = time() . '_' . $tempImg->image;
-                $oldPath = public_path('/uploads/temp/' . $tempImg->image);
-                $newPath = public_path('/uploads/product/' . $imageName);
+                $imageName = time() . '_' . uniqid() . '_' . $tempImg->image;
+                $oldPath = $tempImg->image; // just filename
+                $newPath = 'product/' . $imageName;
 
-                if (file_exists($oldPath)) {
-                    rename($oldPath, $newPath);
+                // Move using 'public' disk
+                if (Storage::disk('public')->exists('temp/' . $oldPath)) {
+                    Storage::disk('public')->move('temp/' . $oldPath, $newPath);
 
                     ProductImg::create([
                         'product_id' => $product->id,
                         'name' => $imageName
                     ]);
 
-                    if ($key == 0 && !$product->image) {
+                    // Set first image as main product image
+                    if (!$product->image && $key === 0) {
                         $product->image = $imageName;
                         $product->save();
                     }
 
+                    // Delete temp record
                     $tempImg->delete();
                 }
             }
@@ -127,11 +136,13 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::with('product_images')->findOrFail($id);
+        $product = Product::with(['product_images', 'product_sizes'])->findOrFail($id);
 
+        $productSize = $product->product_sizes()->pluck('size_id');
         return response()->json([
             'status' => 200,
             'data' => $product,
+            'productSize' => $productSize,
         ], 200);
     }
 
@@ -140,7 +151,7 @@ class ProductController extends Controller
      */
     public function edit(string $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with(['product_images', 'product_sizes'])->findOrFail($id);
         return response()->json([
             'status' => 200,
             'data' => $product,
@@ -150,53 +161,100 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-
         $product = Product::findOrFail($id);
+
         $validator = Validator::make($request->all(), [
             'title' => 'required|min:3',
             'description' => 'nullable',
-            'short_description' => 'required',
+            'short_description' => 'nullable',
             'price' => 'required|numeric',
             'compare_price' => 'nullable|numeric',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'category_id' => 'required|exists:categories,id',
-            'brand_id' => 'nullable|exists:brands,id',
-            'qty' => 'nullable|integer',
+            'brand_id' => 'nullable|nullable|exists:brands,id',
             'sku' => 'required|unique:products,sku,' . $id,
+            'qty' => 'nullable|integer',
+            'barcode' => 'nullable',
             'status' => 'required|integer',
             'is_Featured' => 'required|in:yes,no',
-            'image' => 'nullable|string'
+            'new_images.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'old_image_ids' => 'nullable|array',
+            'old_image_ids.*' => 'integer|exists:product_imgs,id',
+            'sizes' => 'required|array',
+            'sizes.*' => 'integer|exists:sizes,id',
+
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => 400,
+                'status' => 422,
                 'errors' => $validator->errors()
-            ], 400);
+            ]);
         }
         $product->update([
-
             'title' => $request->title,
             'description' => $request->description,
             'short_description' => $request->short_description,
             'price' => $request->price,
             'compare_price' => $request->compare_price,
-            'image' => $request->image,
+            'image' => null,
             'category_id' => $request->category_id,
             'brand_id' => $request->brand_id,
             'qty' => $request->qty,
             'sku' => $request->sku,
             'status' => $request->status,
+            'barcode' => $request->barcode,
             'is_Featured' => $request->is_Featured,
         ]);
+        // if user remove any old img from db
 
+        if ($request->old_image_ids) {
+            ProductImg::where('product_id', $id)
+                ->whereNotIn('id', $request->old_image_ids)
+                ->get()
+                ->each(function ($img) {
+                    $path = storage_path('public/product/' . $img->name);
+                    if (file_exists($path)) unlink($path);
+                    $img->delete();
+                });
+        } else {
+            ProductImg::where('product_id', $id)->get()->each(function ($img) {
+                $path = storage_path('public/product/' . $img->name);
+                if (file_exists($path)) unlink($path);
+                $img->delete();
+            });
+        }
+
+        if ($request->hasFile('new_images')) {
+            foreach ($request->file('new_images') as $file) {
+
+                $imageName = $this->tempImage($file, 'product');
+
+                ProductImg::create([
+                    'product_id' => $product->id,
+                    'name' => $imageName
+                ]);
+            }
+        }
+
+        // sizes array
+        if (!empty($request->sizes)) {
+            ProductSize::where('product_id', $product->id)->delete();
+            foreach ($request->sizes as $sizeId) {
+                ProductSize::create([
+                    'product_id' => $product->id,
+                    'size_id' => $sizeId,
+                ]);
+            }
+        }
 
         return response()->json([
             'status' => 200,
-            'message' => "Product Updated Successfully!",
-            'data' => $product,
-        ], 200);
+            'message' => "Product Updated Successfully",
+            'data' => $product
+        ]);
     }
 
 
@@ -216,6 +274,41 @@ class ProductController extends Controller
             ], 404);
         }
         $product->delete();
+        return response()->json([
+            'status' => 200,
+            'message' => "Product Deleted Successfully!",
+
+        ], 200);
+    }
+    //    defaultimageproduct
+    public function defaultImage(Request $request)
+    {
+        $product = Product::findOrFail($request->product_id);
+        $product->image = $request->image;
+        $product->save();
+        return response()->json([
+            'status' => 200,
+            'message' => "Product Default Image Successfully Set!",
+
+        ], 200);
+    }
+
+
+    // productimagedelete
+    public function imageDelete($id)
+    {
+        $productImg = ProductImg::findOrFail($id);
+
+        if ($productImg == null) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Product Not Found!",
+                'data' => []
+            ], 404);
+        }
+
+        $this->deleteImage($productImg->name, 'product');
+        $productImg->delete();
         return response()->json([
             'status' => 200,
             'message' => "Product Deleted Successfully!",

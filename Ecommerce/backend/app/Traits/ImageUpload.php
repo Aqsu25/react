@@ -8,13 +8,21 @@ trait ImageUpload
 {
     public function tempImage($file, $folder)
     {
-        $imageName = time() . '.' . $file->getClientOriginalExtension();
-        $file->storeAs('public/' . $folder, $imageName);
+        $imageName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+        $file->storeAs($folder, $imageName, 'public');
+
         return $imageName;
     }
-
-    public function tempDeleteImg($folder, $imageName)
+    public function deleteImage($file, $folder)
     {
-        Storage::delete('public/' . $folder . '/' . $imageName);
+        $path = $folder . '/' . $file;
+
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+            return true;
+        }
+
+        return false;
     }
 }
