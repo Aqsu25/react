@@ -71,7 +71,7 @@ function Cards() {
                     className="relative flex flex-col bg-white shadow-sm border border-slate-200 rounded-lg w-full max-w-sm mx-auto transition delay-150 duration-300 ease-in-out hover:-translate-y-1"
                 >
                     <div className="relative overflow-hidden rounded-t-lg">
-                        <Link to="/product">
+                        <Link to={`/product/${newproduct.id}`}>
                             <img
                                 src={newproduct.image_url}
                                 alt={newproduct.title}
@@ -91,8 +91,8 @@ function Cards() {
                         </div>
 
                         <p className="text-slate-600 text-sm leading-normal font-light">
-                            <p>{striptags(newproduct.description)}</p>
-                        </p>
+                                {striptags(newproduct.description)}
+                            </p>
 
                         <button
                             className="rounded-md w-full mt-6 bg-cyan-600 py-2 px-4 text-white text-sm hover:bg-cyan-700 transition"

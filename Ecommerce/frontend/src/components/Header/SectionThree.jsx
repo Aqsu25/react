@@ -70,7 +70,7 @@ function SectionThree() {
                         className="relative flex flex-col bg-white shadow-sm border border-slate-200 rounded-lg w-full max-w-sm mx-auto transition delay-150 duration-300 ease-in-out hover:-translate-y-1"
                     >
                         <div className="relative overflow-hidden rounded-t-lg">
-                            <Link to="/product">
+                            <Link to={`/product/${featuredProduct.id}`}>
                                 <img
                                     src={featuredProduct.image_url}
                                     alt={featuredProduct.title}
@@ -90,7 +90,7 @@ function SectionThree() {
                             </div>
 
                             <p className="text-slate-600 text-sm leading-normal font-light">
-                                <p>{striptags(featuredProduct.description)}</p>
+                                {striptags(featuredProduct.description)}
                             </p>
 
                             <button

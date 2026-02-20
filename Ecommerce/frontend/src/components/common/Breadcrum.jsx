@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-function Breadcrum() {
+function Breadcrum({ bread }) {
     return (
         <nav aria-label="breadcrumb" className="w-max my-2">
             <ol className="flex flex-wrap items-center rounded-md py-2">
@@ -10,7 +10,7 @@ function Breadcrum() {
                     <span className="pointer-events-none mx-2 text-gray-400">/</span>
                 </li>
                 <li className="flex items-center text-sm text-slate-500 hover:text-[#007595]">
-                  Contact-Us
+                 {bread}
                 </li>
             </ol>
         </nav>

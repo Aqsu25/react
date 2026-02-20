@@ -69,7 +69,10 @@ class ProducController extends Controller
     // latestproduct
     public function latestProduct()
     {
-        $latestProduct = Product::orderBy('created_at', 'DESC')->where('status', 1)->limit(6)->get();
+        $latestProduct = Product::orderBy('id', 'DESC')->
+        where('status', 1)
+        ->limit(6)
+        ->get();
 
         return response()->json([
             'status' => 200,
@@ -105,6 +108,39 @@ class ProducController extends Controller
         return response()->json([
             'status' => 200,
             'data' => $brand,
+        ]);
+    }
+
+    // getproduct
+    public function getProducts(Request $request)
+    {
+        $products = Product::orderBy('created_at', 'DESC')->where('status', 1);
+        // filter by category
+        if (!empty($request->category)) {
+            $catArray = explode(',', $request->category);
+            $products = $products->whereIn('category_id', $catArray);
+        }
+        // filter by brands
+        if (!empty($request->brand)) {
+            $brandArray = explode(',', $request->brand);
+            $products = $products->whereIn('brand_id', $brandArray);
+        }
+        $products = $products->get();
+
+        return response()->json([
+            'status' => 200,
+            'data' => $products,
+        ]);
+    }
+
+    // SINGLEPRODUCT
+    public function getProduct($id)
+    {
+        $product = Product::with(['product_images', 'product_sizes'])->findOrFail($id);
+
+        return response()->json([
+            'status' => 200,
+            'data' => $product,
         ]);
     }
 }

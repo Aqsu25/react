@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Layout from '../common/Layout'
-import { Link } from 'react-router'
+import { Link, useParams } from 'react-router'
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -9,10 +9,57 @@ import { FreeMode, Navigation, Thumbs } from 'swiper/modules';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import StarRating from '../common/StarRating';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import { apiUrl } from '../common/Http';
 
 
 function Product() {
     const [thumbsSwiper, setThumbsSwiper] = useState(null);
+    const [product, setProduct] = useState(null);
+    const [productImages, setProductImages] = useState([]);
+    const [productSizes, setProductSizes] = useState([]);
+
+
+    const { id } = useParams();
+    // fetchcategory
+    const fetchProduct = async () => {
+        try {
+            const res = await fetch(`${apiUrl}/getProduct/${id}`, {
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Accept": "application/json",
+                },
+            });
+            const result = await res.json();
+            if (result.status === 200) {
+                console.log(result)
+                setProduct(result.data);
+                setProductImages(result.data.product_images)
+                setProductSizes(result.data.product_sizes)
+            }
+
+        } catch (error) {
+            console.error("Fetch error:", error);
+            toast.error("Something Went Wrong!");
+        }
+    };
+
+    useEffect(() => {
+        if (id) {
+            fetchProduct();
+        }
+    }, [id]);
+
+    if (!product) {
+        return (
+            <Layout>
+                <div className="text-center py-20 text-xl font-semibold">
+                    Loading Product...
+                </div>
+            </Layout>
+        );
+    }
+
     const images = [
         "https://images.unsplash.com/photo-1585386959984-a4155224a1ad",
         "https://images.unsplash.com/photo-1593032465175-481ac7f401a0",
@@ -23,6 +70,9 @@ function Product() {
 
     return (
         <Layout>
+            {
+
+            }
             <div className='container mx-auto px-2 md:px-4 py-2 mb-5'>
                 <nav aria-label="breadcrumb" className="w-max my-4">
                     <ol className="flex flex-wrap items-center rounded-md px-4 py-2">
@@ -35,7 +85,7 @@ function Product() {
                             <span className="pointer-events-none mx-2 text-black">/</span>
                         </li>
                         <li className="flex items-center text-sm text-slate-500 hover:text-[#007595]">
-                            Dummy Product
+                            {product?.title}
                         </li>
                     </ol>
                 </nav>
@@ -49,15 +99,19 @@ function Product() {
                                 modules={[FreeMode, Navigation, Thumbs]}
                                 className="rounded-xl mb-4"
                             >
-                                {images.map((img, index) => (
-                                    <SwiperSlide key={index}>
-                                        <img
-                                            src={img}
-                                            alt="Women Bag"
-                                            className="w-full h-[420px] object-cover rounded-xl"
-                                        />
-                                    </SwiperSlide>
-                                ))}
+                                {productImages.length > 0 &&
+                                    (
+                                        productImages.map((img, index) => (
+                                            <SwiperSlide key={index}>
+                                                <img
+                                                    src={img.image_url}
+                                                    alt="Img"
+                                                    className="w-full h-[420px] object-cover rounded-xl"
+                                                />
+                                            </SwiperSlide>
+                                        ))
+                                    )
+                                }
                             </Swiper>
                             <Swiper
                                 onSwiper={setThumbsSwiper}
@@ -68,40 +122,48 @@ function Product() {
                                 modules={[FreeMode, Thumbs]}
                                 className="cursor-pointer"
                             >
-                                {images.map((img, index) => (
-                                    <SwiperSlide key={index}>
-                                        <img
-                                            src={img}
-                                            alt="Thumbnail"
-                                            className="h-24 w-full object-cover rounded-lg border hover:border-[#007595] transition"
-                                        />
-                                    </SwiperSlide>
-                                ))}
+
+                                {productImages.length > 0 &&
+                                    (
+                                        productImages.map((img, index) => (
+                                            <SwiperSlide key={index}>
+                                                <img
+                                                    src={img.product_images}
+                                                    alt="Img"
+                                                    className="h-24 w-full object-cover rounded-lg border hover:border-[#007595] transition"
+                                                />
+                                            </SwiperSlide>
+                                        ))
+                                    )
+                                }
                             </Swiper>
                         </div>
                     </div>
                     <div className='w-full md:w-3/5 rounded-2xl ms-7 px-5'>
-                        <h1 className='text-4xl font-bold'>Dummy Product</h1>
+                        <h1 className='text-4xl font-bold'> {product?.title}</h1>
                         <div className="flex gap-2 py-3">
                             <StarRating /><span className='text-red-400'>10 Reviews</span>
                         </div>
                         {/* price */}
                         <div className='text-2xl pb-3'>
-                            $10
-                            <span className='text-gray-400 ps-3'>$5</span>
+                            ${product?.price}
+                            <span className='text-gray-400 ps-3'>
+                                ${product?.compare_price}
+                            </span>
                         </div>
                         {/* description */}
                         <div>
-                            A bag is Link flexible or structured container with an opening, used for carrying, storing, or transporting items.
+                            ${product?.short_description}
                         </div>
                         {/* sizes */}
                         <div className="mt-6 pb-3">
                             <h3 className="text-2xl font-bold text-slate-900">Sizes</h3>
                             <div className="flex flex-wrap gap-4 mt-4">
-                                <button type="button" className="rounded-sm w-12 h-11 cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-900 text-sm flex items-center justify-center shrink-0">S</button>
-                                <button type="button" className="rounded-sm w-12 h-11 cursor-pointer bg-gray-200 hover:bg-gray-300 text-slate-900 text-sm flex items-center justify-center shrink-0">M</button>
-                                <button type="button" className="rounded-sm w-12 h-11 cursor-pointer bg-gray-200 hover:bg-gray-300 text-slate-900 text-sm flex items-center justify-center shrink-0">L</button>
-                                <button type="button" className="rounded-sm w-12 h-11 cursor-pointer bg-gray-200 hover:bg-gray-300 text-slate-900 text-sm flex items-center justify-center shrink-0">S</button>
+                                {
+                                    productSizes && productSizes.map((size) => (
+                                        <button type="button" className="rounded-sm w-12 h-11 cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-900 text-sm flex items-center justify-center shrink-0">{size.name}</button>
+                                    ))
+                                }
                             </div>
                         </div>
                         {/* addtocrat */}
@@ -113,20 +175,21 @@ function Product() {
                         <hr className='text-gray-200 py-3 mt-5' />
                         <div className='flex'>
                             <h3 className="text-2xl font-bold text-black">SKU:
-                                <span className='text-gray-900 px-3'>FFGGGWS</span>
+                                <span className='text-gray-900 px-3'> {product?.sku}</span>
                             </h3>
                         </div>
                     </div>
                 </div>
                 <div className='mt-8'>
-                <ul class="flex border-b border-gray-500 mt-5">
-                    <li class="-mb-px mr-1">
-                        <Link class="bg-white inline-block border-l border-t hover:text-red-500 border-r rounded-t py-2 px-4 text-[#007595] font-semibold" to="#">Dashboard</Link>
-                    </li>
-                    <li class="mr-1">
-                        <Link class="bg-white inline-block py-2 px-4 text-[#007595] hover:text-red-500 font-semibold" to="#">Reviews (10)</Link>
-                    </li>
-                </ul>
+                    <ul className="flex border-b border-gray-500 mt-5">
+                        <li className="-mb-px mr-1">
+                            <Link className="bg-white inline-block border-l border-t hover:text-red-500 border-r rounded-t py-2 px-4 text-[#007595] font-semibold" to="#">Description</Link>
+                        </li>
+                        <li className="mr-1">
+                            <Link className
+                                ="bg-white inline-block py-2 px-4 text-[#007595] hover:text-red-500 font-semibold" to="#">Reviews (10)</Link>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </Layout>)

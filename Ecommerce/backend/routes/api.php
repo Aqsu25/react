@@ -19,6 +19,10 @@ Route::get('/featuredProduct', [ProducController::class, 'featuredProduct']);
 Route::get('/getCategories', [ProducController::class, 'getCategories']);
 // getbrands
 Route::get('/getBrands', [ProducController::class, 'getBrands']);
+// getproducts
+Route::get('/getProducts', [ProducController::class, 'getProducts']);
+// getproductsingle
+Route::get('/getProduct/{id}', [ProducController::class, 'getProduct']);
 
 
 // Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
