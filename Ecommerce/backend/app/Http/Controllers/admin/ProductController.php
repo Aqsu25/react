@@ -8,6 +8,7 @@ use App\Models\ProductImg;
 use App\Models\ProductSize;
 use App\Models\TempImg;
 use App\Traits\ImageUpload;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -68,6 +69,7 @@ class ProductController extends Controller
         $clean = Purifier::clean($request->description);
 
         $product = Product::create([
+            'user_id' => Auth::id(),
             'title' => $request->title,
             'description' => $clean,
             'short_description' => $request->short_description,
@@ -194,6 +196,7 @@ class ProductController extends Controller
             ]);
         }
         $product->update([
+            'user_id' => Auth::id(),
             'title' => $request->title,
             'description' => $request->description,
             'short_description' => $request->short_description,

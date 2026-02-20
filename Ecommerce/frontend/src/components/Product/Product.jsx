@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Layout from '../common/Layout'
 import { Link, useParams } from 'react-router'
 import 'swiper/css';
@@ -10,6 +10,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import StarRating from '../common/StarRating';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { apiUrl } from '../common/Http';
+import { toast } from 'react-toastify';
+import { CartContext } from '../context/Cart';
 
 
 function Product() {
@@ -17,6 +19,8 @@ function Product() {
     const [product, setProduct] = useState(null);
     const [productImages, setProductImages] = useState([]);
     const [productSizes, setProductSizes] = useState([]);
+    const [sizeSelected, setSizeSelected] = useState(null);
+    const { addToCart } = useContext(CartContext);
 
 
     const { id } = useParams();
@@ -60,13 +64,27 @@ function Product() {
         );
     }
 
-    const images = [
-        "https://images.unsplash.com/photo-1585386959984-a4155224a1ad",
-        "https://images.unsplash.com/photo-1593032465175-481ac7f401a0",
-        "https://images.unsplash.com/photo-1618354691438-25bc04584c23",
-        "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519",
-        "https://images.unsplash.com/photo-1605733160314-4fc7dac4bb16",
-    ];
+    // const images = [
+    //     "https://images.unsplash.com/photo-1585386959984-a4155224a1ad",
+    //     "https://images.unsplash.com/photo-1593032465175-481ac7f401a0",
+    //     "https://images.unsplash.com/photo-1618354691438-25bc04584c23",
+    //     "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519",
+    //     "https://images.unsplash.com/photo-1605733160314-4fc7dac4bb16",
+    // ];
+
+    const handleCart = () => {
+        if (productSizes.length > 0){
+            if(sizeSelected === 0){
+                toast.error("Please Select Size !");
+            }
+            else{
+                addToCart(sizeSelected);
+            }
+        }
+        else{
+
+        }
+    }
 
     return (
         <Layout>
@@ -161,13 +179,15 @@ function Product() {
                             <div className="flex flex-wrap gap-4 mt-4">
                                 {
                                     productSizes && productSizes.map((size) => (
-                                        <button type="button" className="rounded-sm w-12 h-11 cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-900 text-sm flex items-center justify-center shrink-0">{size.name}</button>
+                                        <button key={size.id} type="button" className="rounded-sm w-12 h-11 cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-900 text-sm flex items-center justify-center shrink-0">{size.name}</button>
                                     ))
                                 }
                             </div>
                         </div>
                         {/* addtocrat */}
-                        <button className="bg-[#007595] mt-3 hover:bg-gray-900 text-white font-bold py-4 px-6 rounded inline-flex items-center">
+                        <button
+                            onClick={() => handleCart()}
+                            className="bg-[#007595] mt-3 hover:bg-gray-900 text-white font-bold py-4 px-6 rounded inline-flex items-center">
                             <FontAwesomeIcon icon={faShoppingCart} className='
                             pe-2' />
                             <span>Add To Cart</span>
