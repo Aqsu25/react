@@ -192,15 +192,17 @@ function ProductShow() {
                             {product.sku}
                           </td>
                           <td className="px-6 py-4">
-                            {product.image || (product.product_images && product.product_images.length > 0) ? (
-                              <img
-                                src={`http://backend.test/storage/product/${product.image || product.product_images[0].name}`}
-                                width={50}
-                                alt='img'
-                              />
-                            ) : (
-                              <p>No Image Available</p>
-                            )}
+                          <img
+  src={
+    product.image
+      ? `http://backend.test/storage/product/${product.image}`
+      : product.product_images.length > 0
+      ? `http://backend.test/storage/product/${product.product_images[0].name}`
+      : ''
+  }
+  width={50}
+  alt={product.image || 'Product Image'}
+/>
                           </td>
 
                           <td className="px-6 py-4">
