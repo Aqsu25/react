@@ -78,8 +78,8 @@ function Product() {
             return ;
             }
             else{
-                const selectedSize=productSizes.length > 0 ? 'sizeSelected':'null';
-                addToCart(product,sizeSelected);
+               const selectedSize = productSizes.length > 0 ? sizeSelected : null;
+addToCart(product, selectedSize);
                  toast.success("Product Successfully Add To Cart!");    
             }
            
@@ -170,24 +170,24 @@ function Product() {
                             {product?.short_description}
                         </div>
                         {/* sizes */}
-                        <div className="mt-6 pb-3">
-                            <h3 className="text-2xl font-bold text-slate-900">Sizes</h3>
-                            <div className="flex flex-wrap gap-4 mt-4">
-                               {
-  productSizes.map((size) => (
-    <button
-      key={size.id}
-      onClick={() => setSizeSelected(size.name)}
-      className={`rounded-sm w-12 h-11 cursor-pointer 
-        ${sizeSelected === size.name ? 'bg-black text-white' : 'bg-gray-200 hover:bg-gray-300'} 
-        flex items-center justify-center shrink-0`}
-    >
-      {size.name}
-    </button>
-  ))
-}
-                            </div>
-                        </div>
+                       {productSizes.length > 0 && (
+  <div className="mt-6 pb-3">
+    <h3 className="text-2xl font-bold text-slate-900">Sizes</h3>
+    <div className="flex flex-wrap gap-4 mt-4">
+      {productSizes.map((size) => (
+        <button
+          key={size.id}
+          onClick={() => setSizeSelected(size.name)}
+          className={`rounded-sm w-12 h-11 cursor-pointer 
+            ${sizeSelected === size.name ? 'bg-black text-white' : 'bg-gray-200 hover:bg-gray-300'} 
+            flex items-center justify-center shrink-0`}
+        >
+          {size.name}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
                         {/* addtocrat */}
                         <button
                             onClick={() => handleCart()}
