@@ -73,30 +73,20 @@ function Product() {
     // ];
 
     const handleCart = () => {
-        if (productSizes.length > 0){
-            if(!sizeSelected){
+        if (productSizes.length > 0 && !sizeSelected ){
                 toast.error("Please Select Size !");
+            return ;
             }
             else{
+                const selectedSize=productSizes.length > 0 ? 'sizeSelected':'null';
                 addToCart(product,sizeSelected);
                  toast.success("Product Successfully Add To Cart!");    
             }
-            else{
-            addToCart(sizeSelected);
-            toast.success("Product Successfully Add To Cart!");    
-        }
-            
-        }
-        else{
-
-        }
+           
     }
 
     return (
         <Layout>
-            {
-
-            }
             <div className='container mx-auto px-2 md:px-4 py-2 mb-5'>
                 <nav aria-label="breadcrumb" className="w-max my-4">
                     <ol className="flex flex-wrap items-center rounded-md px-4 py-2">
