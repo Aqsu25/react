@@ -4,8 +4,11 @@ import { Link } from 'react-router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import { CartContext } from '../context/Cart';
 
 function Cart() {
+        const { cartData,shipping,subTotal,grandTotal } = useContext(CartContext);
+
     return (
         <Layout>
             <div className='container mx-auto px-2 md:px-4 py-2'>
@@ -44,12 +47,13 @@ function Cart() {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr className="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium">
+                                {cartData && cartData.map(item=>
+             <tr className="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium">
                                     <td className="p-4">
-                                        <img src="https://images.pexels.com/photos/27835299/pexels-photo-27835299.jpeg" className="w-16 md:w-24 max-w-full max-h-full" alt="Apple Watch" />
+                                        <img src=`${item.image_url}` className="w-16 md:w-24 max-w-full max-h-full" alt="Apple Watch" />
                                     </td>
                                     <td className="px-6 py-4 font-semibold text-heading">
-                                        Apple Watch
+                                        {item.name}
                                     </td>
                                     <td className="px-6 py-4">
                                         <form className="max-w-xs mx-auto">
@@ -66,7 +70,7 @@ function Cart() {
                                         </form>
                                     </td>
                                     <td className="px-6 py-4 font-semibold text-heading">
-                                        $599
+                                        ${item.price}
                                     </td>
                                     <td className="px-6 py-4">
                                         <Link href="#" className="font-medium text-fg-danger hover:underline">
@@ -75,7 +79,7 @@ function Cart() {
                                         </Link>
                                     </td>
                                 </tr>
-
+            )}
                             </tbody>
                         </table>
                     </div>
@@ -85,15 +89,15 @@ function Cart() {
                     <div className='p-5 shadow-2xl rounded-sm'>
                         <div className="flex justify-between gap-5 py-2">
                             <div>Subtotal</div>
-                            <div>$10</div>
+                            <div>${subTotal()}</div>
                         </div>
                         <div className="flex justify-between gap-5 py-2">
                             <div>Shipping</div>
-                            <div>$10</div>
+                            <div>${shipping()}</div>
                         </div>
                         <div className="flex justify-between gap-5 py-2">
                             <div className='font-bold'>Grand Total</div>
-                            <div>$10</div>
+                            <div>${grandTotal()}</div>
                         </div>
                         <div className="flex justify-between gap-5 py-2">
                             <button className="bg-[#007595] mt-3 hover:bg-gray-900 text-white font-bold py-4 px-6 rounded inline-flex items-center">
