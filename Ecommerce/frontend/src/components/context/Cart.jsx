@@ -46,12 +46,8 @@ export const CartProvider = ({ children }) => {
 const shipping=()=>{
   return 0;
 }
-  const subTotal=()=>{
-  let subTotal;
-    cartData.reduce(total,item => {
-      total + item.qty * item.price;
-    },0)
-                 return subTotal;
+const subTotal = () => {
+  return cartData.reduce((total, item) => total + item.qty * item.price, 0);
 }
   const grandTotal=()=>{
   return shipping()+subTotal();
