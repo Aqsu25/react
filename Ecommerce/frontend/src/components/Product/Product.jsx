@@ -74,12 +74,18 @@ function Product() {
 
     const handleCart = () => {
         if (productSizes.length > 0){
-            if(sizeSelected === 0){
+            if(!sizeSelected){
                 toast.error("Please Select Size !");
             }
             else{
-                addToCart(sizeSelected);
+                addToCart(product,sizeSelected);
+                 toast.success("Product Successfully Add To Cart!");    
             }
+            else{
+            addToCart(sizeSelected);
+            toast.success("Product Successfully Add To Cart!");    
+        }
+            
         }
         else{
 
@@ -146,7 +152,7 @@ function Product() {
                                         productImages.map((img, index) => (
                                             <SwiperSlide key={index}>
                                                 <img
-                                                    src={img.product_images}
+                                                    src={img.image_url}
                                                     alt="Img"
                                                     className="h-24 w-full object-cover rounded-lg border hover:border-[#007595] transition"
                                                 />
@@ -171,17 +177,25 @@ function Product() {
                         </div>
                         {/* description */}
                         <div>
-                            ${product?.short_description}
+                            {product?.short_description}
                         </div>
                         {/* sizes */}
                         <div className="mt-6 pb-3">
                             <h3 className="text-2xl font-bold text-slate-900">Sizes</h3>
                             <div className="flex flex-wrap gap-4 mt-4">
-                                {
-                                    productSizes && productSizes.map((size) => (
-                                        <button key={size.id} type="button" className="rounded-sm w-12 h-11 cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-900 text-sm flex items-center justify-center shrink-0">{size.name}</button>
-                                    ))
-                                }
+                               {
+  productSizes.map((size) => (
+    <button
+      key={size.id}
+      onClick={() => setSizeSelected(size.name)}
+      className={`rounded-sm w-12 h-11 cursor-pointer 
+        ${sizeSelected === size.name ? 'bg-black text-white' : 'bg-gray-200 hover:bg-gray-300'} 
+        flex items-center justify-center shrink-0`}
+    >
+      {size.name}
+    </button>
+  ))
+}
                             </div>
                         </div>
                         {/* addtocrat */}
