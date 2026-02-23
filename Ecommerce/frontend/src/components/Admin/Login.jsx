@@ -87,7 +87,7 @@ function Login() {
                             <input
                                 type="email"
                                 placeholder="Your Email"
-                                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:border-[#007595]"
+                                className="w-full rounded-md px-3 py-2 focus:outline-none focus:border-[#007595]"
                                 {...register("email", {
                                     required: "Email is required",
                                     pattern: {
@@ -113,7 +113,7 @@ function Login() {
                             <input
                                 type="password"
                                 placeholder="Your Password"
-                                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:border-[#007595]"
+                                className="w-full rounded-md px-3 py-2 focus:outline-none focus:border-[#007595]"
                                 {...register("password", {
                                     required: "Password is required"
                                 })}
