@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiUrl } from './Http';
 import striptags from "striptags";
+import { CartContext } from '../context/Cart';
+
 
 
 function Cards() {
     const [newProducts, setNewProduct] = useState([]);
+    const { addToCart } = useContext(CartContext);
+
     // const newArrival = [
     //     {
     //         id: 1,
@@ -63,6 +67,19 @@ function Cards() {
         newArrivals();
 
     }, []);
+
+    // const handleCart = () => {
+    //     if (productSizes.length > 0 && !sizeSelected) {
+    //         toast.error("Please Select Size !");
+    //         return;
+    //     }
+    //     else {
+    //         const selectedSize = productSizes.length > 0 ? sizeSelected : null;
+    //         addToCart(product, selectedSize);
+    //         toast.success("Product Successfully Add To Cart!");
+    //     }
+
+    // }
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {newProducts.map((newproduct) => (
@@ -91,10 +108,11 @@ function Cards() {
                         </div>
 
                         <p className="text-slate-600 text-sm leading-normal font-light">
-                                {striptags(newproduct.description)}
-                            </p>
+                            {striptags(newproduct.description)}
+                        </p>
 
                         <button
+                            // onClick={() => handleCart()}
                             className="rounded-md w-full mt-6 bg-cyan-600 py-2 px-4 text-white text-sm hover:bg-cyan-700 transition"
                             type="button"
                         >

@@ -1,0 +1,125 @@
+<?php
+
+namespace App\Http\Controllers\Front;
+
+use App\Http\Controllers\Controller;
+use App\Models\Order;
+use App\Models\OrderItem;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+
+class OrderController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        $orders = Order::orderBy('created_at', 'ASC')->get();
+
+        return response()->json([
+            'status' => 200,
+            'data' => $orders,
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'cart' => 'required|array|min:1',
+            'sub_total' => 'required|numeric|min:0',
+            'shipping' => 'required|numeric|min:0',
+            'grand_total' => 'required|numeric|min:0',
+            'payment_status' => ['required', Rule::in(['paid', 'not paid'])],
+            'status' => ['required', Rule::in(['pending', 'delivered', 'shipped', 'cancelled'])],
+            'phone_num' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'zip' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors()
+            ], 400);
+        }
+
+        $order = Order::create([
+            'user_id' => Auth::id(),
+            'sub_total' => $request->sub_total,
+            'shipping' => $request->shipping,
+            'grand_total' => $request->grand_total,
+            'discount' => $request->discount,
+            'payment_status' => $request->payment_status,
+            'status' => $request->status,
+            'phone_num' => $request->phone_num,
+            'city' => $request->city,
+            'state' => $request->state,
+            'zip' => $request->zip,
+        ]);
+
+        foreach ($request->cart as $item) {
+            OrderItem::create([
+                'product_id' => $item['product_id'],
+                'order_id'   => $order->id,
+                'size'       => $item['size'] ?? null,
+                'unit_price'  => $item['price'],
+                'qty'        => $item['qty'],
+                'price'      => $item['price'] * $item['qty'],
+            ]);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => "Order placed successfully",
+            'data' => $order
+        ]);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
+    }
+}

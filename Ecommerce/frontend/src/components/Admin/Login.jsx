@@ -25,7 +25,7 @@ function Login() {
             body: JSON.stringify(data)
         }).then(res => res.json())
             .then(result => {
-              
+
                 console.log("API Result:", result);
                 console.log("Token:", result.token);
                 if (result.status == 200) {
@@ -45,12 +45,14 @@ function Login() {
     }
     return (
         <Layout>
-            <form onSubmit={handleSubmit(onHandleSubmit)}>
-                <div className="relative flex flex-col bg-white shadow-sm border border-slate-200 w-96 rounded-lg my-6 container mx-auto">
-                    <div className="relative items-center flex justify-center text-[#007595] h-24 rounded-md">
-                        <h3 className="text-2xl">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 px-4">
+                <form onSubmit={handleSubmit(onHandleSubmit)}
+                    className="w-full max-w-md bg-white p-4 rounded-2xl shadow-xl transform transition-all duration-500 hover:shadow-2xl"
+                >                        <div className="relative items-center flex justify-center text-[#007595] h-24 rounded-md">
+                        <h2 className="text-3xl font-bold text-center text-[#007595] mb-8 animate-fadeIn">
                             Admin Login
-                        </h3>
+                        </h2>
+
                     </div>
                     <div className="flex flex-col gap-4 p-6 pt-0">
                         <div className="w-full max-w-sm min-w-50">
@@ -68,7 +70,9 @@ function Login() {
                                         }
                                     })}
 
-                                type="email" className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" placeholder="Your Email" />
+                                type="email"
+                                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
+                                placeholder="Your Email" />
                             {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
                         </div>
 
@@ -109,7 +113,7 @@ function Login() {
                             </label>
                         </div>
                         <div className="p-6 pt-0">
-                            <button className="w-full rounded-md bg-[#007595] py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="submit">
+                            <button className="w-full rounded-md bg-[#007595] py-2 px-4 border border-transparent text-center text-sm text-white shadow-md hover:shadow-lg focus:bg-slate-900 focus:shadow-none active:bg-slate-700 transition-all duration-300 hover:bg-slate-900 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="submit">
                                 Sign In
                             </button>
                             <p className="flex justify-center mt-6 text-sm text-slate-600">
@@ -120,8 +124,8 @@ function Login() {
                             </p>
                         </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </Layout >
     )
 }

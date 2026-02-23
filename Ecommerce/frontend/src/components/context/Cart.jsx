@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export const CartContext = createContext();
 
@@ -22,7 +23,7 @@ export const CartProvider = ({ children }) => {
     );
 
     if (existingItem) {
-      
+
       const updatedCart = cartData.map(item =>
         item.product_id === product.id && item.size === size
           ? { ...item, qty: item.qty + 1 }
@@ -30,7 +31,7 @@ export const CartProvider = ({ children }) => {
       );
       setCartData(updatedCart);
     } else {
-    
+
       const newItem = {
         id: Date.now(),
         product_id: product.id,
@@ -43,18 +44,36 @@ export const CartProvider = ({ children }) => {
       setCartData([...cartData, newItem]);
     }
   };
-const shipping=()=>{
-  return 0;
-}
-const subTotal = () => {
-  return cartData.reduce((total, item) => total + item.qty * item.price, 0);
-}
-  const grandTotal=()=>{
-  return shipping()+subTotal();
-}
-  
+  const shipping = () => {
+    return 0;
+  };
+  const subTotal = () => {
+    return cartData.reduce((total, item) => total + item.qty * item.price, 0);
+  };
+  const grandTotal = () => {
+    return shipping() + subTotal();
+  };
+
+  const updateCartqty = (productId, qty, size = null) => {
+    if (qty < 0) {
+      return;
+    }
+    setCartData(cartData.map(item =>
+      item.product_id === productId && item.size === size
+        ? { ...item, qty }
+        : item
+    )
+    )
+  };
+
+  const removeItem = (id) => {
+
+    setCartData(cartData.filter(item => item.id !== id));
+    toast.success("Remove Item Successfully!");
+  };
+
   return (
-    <CartContext.Provider value={{ cartData, addToCart,shipping,subTotal,grandTotal }}>
+    <CartContext.Provider value={{ cartData, addToCart, shipping, updateCartqty, subTotal, grandTotal, removeItem }}>
       {children}
     </CartContext.Provider>
   );

@@ -5,6 +5,8 @@ use App\Http\Controllers\admin\CategoryController;
 use App\Http\Controllers\admin\ProductController;
 use App\Http\Controllers\admin\SizeController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Front\OrderController;
 use App\Http\Controllers\Front\ProducController;
 use App\Http\Controllers\TempController;
 use Illuminate\Support\Facades\Route;
@@ -23,13 +25,28 @@ Route::get('/getBrands', [ProducController::class, 'getBrands']);
 Route::get('/getProducts', [ProducController::class, 'getProducts']);
 // getproductsingle
 Route::get('/getProduct/{id}', [ProducController::class, 'getProduct']);
+// register
+Route::post('/register', [RegisteredUserController::class, 'store']);
+// login
+Route::post('/login', [RegisteredUserController::class, 'login']);
+
+
+
+Route::group(
+    ['middleware' => ['auth:sanctum', 'checkUserRole']],
+    function () {
+        Route::resource('/orders', OrderController::class);
+    }
+);
+
+
 
 
 // Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 //     return $request->user();
 // });
 Route::group(
-    ['middleware' => 'auth:sanctum'],
+    ['middleware' => ['auth:sanctum', 'checkAdminRole']],
     function () {
         Route::get('/admin/categories', [CategoryController::class, 'index']);
         Route::get('/admin/categories/{id}', [CategoryController::class, 'show']);
