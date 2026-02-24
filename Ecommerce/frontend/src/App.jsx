@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from "./components/Home"
 import Shop from "./components/Shop"
 import Product from './components/Product/Product';
@@ -23,6 +22,7 @@ import Register from './components/Register';
 import UserLogin from './components/UserLogin';
 import { Userrequireauth } from './components/User/Userrequireauth';
 import UserDashboard from './components/User/UserDashboard';
+import OrderConfirmation from './components/User/OrderConfirmation';
 
 
 
@@ -36,7 +36,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
+          {/* <Route path="/checkout" element={<Checkout />} /> */}
           <Route path="/product/:id" element={<Product />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/register" element={<Register />} />
@@ -51,7 +51,24 @@ function App() {
               </Userrequireauth>
             }
           />
-
+          {/* checkout */}
+          <Route
+            path="/checkout"
+            element={
+              <Userrequireauth>
+                <Checkout />
+              </Userrequireauth>
+            }
+          />
+          {/* confirmation */}
+          <Route
+            path="/order/confirmation/:id"
+            element={
+              <Userrequireauth>
+                <OrderConfirmation />
+              </Userrequireauth>
+            }
+          />
 
           {/* admin routes */}
           <Route

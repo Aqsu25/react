@@ -126,10 +126,10 @@ function Cart() {
                 <span>${grandTotal()}</span>
               </div>
 
-              <button className="w-full mt-6 bg-[#007595] text-white py-3 rounded-xl flex justify-center items-center gap-2 hover:bg-black transition duration-300 hover:scale-105">
+              <Link to="/checkout" className="w-full mt-6 bg-[#007595] text-white py-3 rounded-xl flex justify-center items-center gap-2 hover:bg-black transition duration-300 hover:scale-105">
                 <FontAwesomeIcon icon={faShoppingCart} />
                 Checkout
-              </button>
+              </Link>
             </div>
 
           </div>

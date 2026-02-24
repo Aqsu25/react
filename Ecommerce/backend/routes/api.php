@@ -5,6 +5,7 @@ use App\Http\Controllers\admin\CategoryController;
 use App\Http\Controllers\admin\ProductController;
 use App\Http\Controllers\admin\SizeController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Front\OrderController;
 use App\Http\Controllers\Front\ProducController;
@@ -32,12 +33,25 @@ Route::post('/login', [RegisteredUserController::class, 'login']);
 
 
 
-Route::group(
-    ['middleware' => ['auth:sanctum', 'checkUserRole']],
-    function () {
-        Route::resource('/orders', OrderController::class);
-    }
-);
+
+Route::group([
+    'middleware' => [
+        'auth:sanctum'
+        //  ,'checkUserRole'
+    ]
+], function () {
+
+    Route::resource('/orders', OrderController::class);
+
+    Route::get('/getUser', function (Request $request) {
+
+        return response()->json([
+            'status' => 200,
+            'data' => $request->user()
+        ]);
+    });
+});
+
 
 
 

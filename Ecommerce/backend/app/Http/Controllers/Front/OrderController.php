@@ -87,6 +87,7 @@ class OrderController extends Controller
         return response()->json([
             'status' => 200,
             'message' => "Order placed successfully",
+            'id' => $order->id,
             'data' => $order
         ]);
     }
@@ -94,10 +95,18 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
-    }
+   public function show(string $id)
+{
+    $order = Order::with('items')->findOrFail($id);
+
+    return response()->json([
+        'status' => 200,
+        'data' => [
+            'order' => $order,
+            'items' => $order->items
+        ]
+    ], 200);
+}
 
     /**
      * Show the form for editing the specified resource.

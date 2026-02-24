@@ -19,4 +19,11 @@ class Order extends Model
         'state',
         'zip',
     ];
+
+    public function items()
+    {
+       return $this->hasMany(OrderItem::class);
+    }
+    
+
 }

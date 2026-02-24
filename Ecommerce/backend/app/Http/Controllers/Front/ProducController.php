@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ProducController extends Controller
@@ -69,10 +70,9 @@ class ProducController extends Controller
     // latestproduct
     public function latestProduct()
     {
-        $latestProduct = Product::orderBy('id', 'DESC')->
-        where('status', 1)
-        ->limit(6)
-        ->get();
+        $latestProduct = Product::orderBy('id', 'DESC')->where('status', 1)
+            ->limit(6)
+            ->get();
 
         return response()->json([
             'status' => 200,
@@ -143,4 +143,6 @@ class ProducController extends Controller
             'data' => $product,
         ]);
     }
+    // users
+   
 }

@@ -1,132 +1,367 @@
-import React from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import Layout from '../../common/Layout'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
+import { CartContext } from '../../context/Cart'
+import { useForm } from 'react-hook-form'
+import { apiUrl, UserToken } from '../../common/Http'
+import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router'
+
 function Checkout() {
+
+    const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+    const {
+        cartData,
+        shipping,
+        subTotal,
+        grandTotal,
+
+    } = useContext(CartContext);
+    const navigate = useNavigate();
+    const [paymentMethod, setPaymentMethod] = useState(`cod`);
+    // handlepayment
+    const handlePayment = (e) => {
+        setPaymentMethod(e.target.value)
+    }
+    // fetch user
+    const fetchUserData = async () => {
+        try {
+            const res = await fetch(`${apiUrl}/getUser`, {
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Accept": "application/json",
+                    Authorization: `Bearer ${UserToken()}`
+                },
+            });
+
+            const result = await res.json();
+            console.log("API Response:", result);
+
+            if (result.status === 200 && result.data) {
+                setValue("name", result.data.name)
+                setValue("email", result.data.email)
+            }
+
+        } catch (error) {
+            console.error("Fetch error:", error);
+            toast.error("Something Went Wrong!");
+        }
+    };
+
+    const handleCheckout = async (data) => {
+
+        console.log("Form Data:", data);
+        console.log("Cart Data:", cartData);
+
+        if (!data.payment) {
+            toast.error("Please select payment method");
+            return;
+        }
+        if (paymentMethod) {
+            saveOrder(data, 'not paid')
+        }
+
+    }
+    const saveOrder = async (formData, paymentStaus) => {
+        console.log(cartData)
+        const newFormData = {
+            ...formData, sub_total: subTotal(),
+            shipping: shipping(),
+            grand_total: grandTotal(),
+            discount: 0,
+            payment_status: paymentStaus,
+            status: 'pending',
+            cart: cartData
+        }
+        const res = await fetch(`${apiUrl}/orders`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                "Accept": "application/json",
+                "Authorization": `Bearer ${UserToken()}`
+
+            },
+            body: JSON.stringify(newFormData)
+
+        })
+        const result = await res.json();
+
+        console.log("API Show Result:", result.data);
+
+        if (result.status == 200) {
+            localStorage.removeItem('cart')
+            navigate("/order-confirmation", {
+                state: {
+                    order: result.data,
+                    orderItems: cartData,
+                },
+            });
+        } else {
+            console.log("Something went wrong!")
+            toast.error(result.message)
+        }
+    }
+
+    useEffect(() => {
+        fetchUserData();
+    }, []);
+
     return (
         <Layout>
-            <div>
+            <div className="container mx-auto px-4 py-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
-                <div className="flex flex-col md:flex-row container mx-auto my-5 ">
-                    <div className='my-5 container'>
-                        <h2 className='text-2xl py-5'>Billing Details</h2>
-                        <form className="w-full max-w-lg">
-                            <div className="flex flex-wrap -mx-3 mb-6">
-                                <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-first-name">
+                    <div className="lg:col-span-2 bg-white p-8 rounded-lg shadow-md">
+
+                        <h2 className="text-2xl font-semibold mb-6">
+                            Billing Details
+                        </h2>
+
+                        <form
+                            className="space-y-6"
+                            onSubmit={handleSubmit(handleCheckout)}
+                        >
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-gray-600">
                                         Name
                                     </label>
-                                    <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" id="grid-first-name" type="text" placeholder="Jane" />
-                                    <p className="text-red-500 text-xs italic">Please fill out this field.</p>
+
+                                    <input
+                                        {...register("name", { required: "Name required" })}
+                                        type="text"
+                                        className="w-full border bg-gray-50
+                                         rounded-lg px-4 py-2"
+                                    />
+                                    {errors.name &&
+                                        <p className="text-red-500 text-sm">
+                                            {errors.name.message}
+                                        </p>
+                                    }
                                 </div>
-                                <div className="w-full md:w-1/2 px-3">
-                                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-last-name">
+
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-gray-600">
                                         Email
                                     </label>
-                                    <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-last-name" type="text" placeholder="aqsa@gmail.com" />
+
+                                    <input
+                                        {...register("email", { required: "Email required" })}
+                                        type="email"
+                                        className="w-full bg-gray-50 border rounded-lg px-4 py-2"
+                                    />
+                                    {errors.email &&
+                                        <p className="text-red-500 text-sm">
+                                            {errors.email.message}
+                                        </p>
+                                    }
                                 </div>
                             </div>
-                            <div className="flex flex-wrap -mx-3 mb-6">
-                                <div className="w-full px-3">
-                                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-password">
-                                        Mobile
-                                    </label>
-                                    <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-password" type="text" placeholder="123456778" />
-                                </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-2 text-gray-600">
+                                    Mobile
+                                </label>
+
+                                <input
+                                    {...register("phone_num", {
+                                        required: "Phone number required"
+                                    })}
+                                    placeholder='0778643677'
+                                    type="text"
+                                    className="w-full bg-gray-50 border rounded-lg px-4 py-2"
+                                />
+
+                                {errors.phone_num &&
+                                    <p className="text-red-500 text-sm">
+                                        {errors.phone_num.message}
+                                    </p>
+                                }
                             </div>
-                            <div className="flex flex-wrap -mx-3 mb-2">
-                                <div className="w-full md:w-1/3 px-3 mb-6 md:mb-0">
-                                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-city">
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-gray-600">
                                         City
                                     </label>
-                                    <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-city" type="text" placeholder="Albuquerque" />
+                                    <input
+                                        {...register("city", {
+                                            required: "City required"
+                                        })}
+                                        type="text"
+                                        placeholder="City"
+                                        className="w-full bg-gray-50 border rounded-lg px-4 py-2"
+                                    />
+                                    {errors.city &&
+                                        <p className="text-red-500 text-sm">
+                                            {errors.city.message}
+                                        </p>
+                                    }
                                 </div>
-                                <div className="w-full md:w-1/3 px-3 mb-6 md:mb-0">
-                                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-state">
+
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-gray-600">
                                         State
                                     </label>
-                                    <div className="relative">
-                                        <select className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
-                                            <option>New Mexico</option>
-                                            <option>Missouri</option>
-                                            <option>Texas</option>
-                                        </select>
-                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                                        </div>
-                                    </div>
+                                    <input
+                                        {...register("state", {
+                                            required: "State required"
+                                        })}
+                                        type="text"
+                                        placeholder="State"
+                                        className="w-full bg-gray-50 border rounded-lg px-4 py-2"
+                                    />
+                                    {errors.state &&
+                                        <p className="text-red-500 text-sm">
+                                            {errors.state.message}
+                                        </p>
+                                    }
                                 </div>
-                                <div className="w-full md:w-1/3 px-3 mb-6 md:mb-0">
-                                    <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="grid-zip">
-                                        Zip
+
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-gray-600">
+                                        Zip Code
                                     </label>
-                                    <input className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-zip" type="text" placeholder="90210" />
+                                    <input
+                                        {...register("zip", {
+                                            required: "Zip required"
+                                        })}
+                                        type="text"
+                                        placeholder="Zip Code"
+                                        className="w-full bg-gray-50 border rounded-lg px-4 py-2"
+                                    />
+                                    {errors.zip &&
+                                        <p className="text-red-500 text-sm">
+                                            {errors.zip.message}
+                                        </p>
+                                    }
+                                </div>
+
+                            </div>
+
+                            <div className="mt-10">
+                                <h3 className="text-xl font-semibold mb-6">
+                                    Order Items
+                                </h3>
+
+                                <div className="space-y-6">
+                                    {cartData?.map((cart, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex flex-col md:flex-row items-center justify-between border-b pb-5"
+                                        >
+                                            <div className="flex items-center gap-5">
+
+                                                <img
+                                                    src={cart.image_url}
+                                                    alt={cart.title}
+                                                    className="w-20 h-20 object-cover rounded-lg"
+                                                />
+
+                                                <div>
+                                                    <h4 className="font-medium text-lg">
+                                                        {cart.title}
+                                                    </h4>
+
+                                                    <p className="text-sm text-gray-500">
+                                                        ${cart.price}
+                                                    </p>
+                                                </div>
+
+                                            </div>
+
+                                            {cart.size && (
+                                                <span className="bg-[#007595] text-white px-4 py-2 rounded-md text-sm">
+                                                    Size: {cart.size}
+                                                </span>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        </form>
 
-                    </div>
-                    <div className='my-5 container'>
-                        <h2 className='text-2xl py-5'>Items</h2>
-                        <table className="w-full text-sm text-left rtl:text-right text-body mb-6">
-
-                            <tbody>
-                                <tr className="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium">
-                                    <td className="p-4 flex">
-                                        <img src="https://images.pexels.com/photos/27835299/pexels-photo-27835299.jpeg" className="w-16 md:w-24 max-w-full max-h-full" alt="Apple Watch" />
-                                        <div className='ps-5'>
-                                            <h3 className='px-3 text-2xl mb-5'>Bags</h3>
-                                            <div className='flex justify-between gap-8 px-3'>
-                                                <span className='mt-3 text-sm'>$10</span>
-                                                <button type="button" className="rounded-sm w-12 h-11 cursor-pointer hover:bg-gray-200 bg-[#007595] text-white text-sm flex items-center justify-center shrink-0">S</button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div className='flex justify-center md:justify-end me-5 my-4'>
-                    <div className='p-5 shadow-2xl rounded-sm'>
-                        <div className="flex justify-between gap-5 py-2">
-                            <div>Subtotal</div>
-                            <div>$10</div>
-                        </div>
-                        <div className="flex justify-between gap-5 py-2">
-                            <div>Shipping</div>
-                            <div>$10</div>
-                        </div>
-                        <div className="flex justify-between gap-5 py-2">
-                            <div className='font-bold'>Grand Total</div>
-                            <div>$10</div>
-                        </div>
-                        <div className='font-bold'>Payment Method</div>
-                        <div className="flex justify-items gap-5 mt-4">
-                            <div className='flex'>
-                                <input type="radio" className='mr-2
-                                appearance-none w-5 h-5 border-2 border-gray-400 rounded-full bg-white checked:bg-[#007595] checked:border-[#007595] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 peer' />
-                                <label htmlFor="" className='pe-4'>Stripe</label>
-                            </div>
-                            <div className='flex'>
-                                <input type="radio" className='mr-2
-                                appearance-none w-5 h-5 border-2 border-gray-400 rounded-full bg-white checked:bg-[#007595] checked:border-[#007595] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 peer' />
-                                <label htmlFor="" className='pe-4'>COD</label>
-                            </div>
-                        </div>
-                        <div className="flex justify-between gap-5 py-2">
-                            <button className="bg-[#007595] mt-3 hover:bg-gray-900 text-white font-bold py-4 px-6 rounded inline-flex items-center">
-                                <FontAwesomeIcon icon={faShoppingCart} className='
-                                                                pe-2' />
-                                <span>Proceed To Checkout</span>
+                            <button
+                                type="submit"
+                                className="w-full mt-8 bg-[#007595] hover:bg-gray-900 text-white py-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition"
+                            >
+                                <FontAwesomeIcon icon={faShoppingCart} />
+                                Proceed To Checkout
                             </button>
-                        </div>
+
+                        </form>
                     </div>
+                    <div className="bg-white p-8 rounded-lg shadow-md h-fit sticky top-20">
+
+                        <h3 className="text-xl font-semibold mb-6">
+                            Order Summary
+                        </h3>
+
+                        <div className="space-y-4">
+
+                            <div className="flex justify-between">
+                                <span>Subtotal</span>
+                                <span>${subTotal()}</span>
+                            </div>
+
+                            <div className="flex justify-between">
+                                <span>Shipping</span>
+                                <span>${shipping()}</span>
+                            </div>
+
+                            <hr />
+
+                            <div className="flex justify-between font-bold text-lg">
+                                <span>Total</span>
+                                <span>${grandTotal()}</span>
+                            </div>
+
+                        </div>
+
+                        <div className="mt-8">
+
+                            <h4 className="font-semibold mb-4">
+                                Payment Method
+                            </h4>
+
+                            <div className="space-y-3">
+
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        value="stripe"
+                                        {...register("payment", { required: true })}
+                                        className="accent-[#007595]"
+                                    />
+                                    Stripe
+                                </label>
+
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        value="cod"
+                                        {...register("payment", { required: true })}
+                                        className="accent-[#007595]"
+                                    />
+                                    Cash On Delivery
+                                </label>
+
+                                {errors.payment &&
+                                    <p className="text-red-500 text-sm">
+                                        Please select payment method
+                                    </p>
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
             </div>
-
         </Layout>
-
     )
 }
 
