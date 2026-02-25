@@ -73,7 +73,7 @@ function ShowOrder() {
                                             <table className="w-full text-sm text-left rtl:text-right text-body">
                                                 <thead className="bg-neutral-secondary-soft border-b border-gray-300">
                                                     <tr
-                                                        className="odd:bg-neutral-primary even:bg-neutral-secondary-soft hover:bg-gray-100 cursor-pointer transition"
+                                                        className="odd:bg-neutral-primary even:bg-neutral-secondary-soft hover:bg-gray-100 transition"
                                                     >
                                                         <th scope="col" className="px-6 py-3 font-medium">
                                                             #
@@ -104,9 +104,12 @@ function ShowOrder() {
 
                                                             <tr
                                                                 key={index}
-                                                                className="odd:bg-neutral-primary even:bg-neutral-secondary-soft hover:bg-gray-100 cursor-pointer transition"
-                                                            >                                                                <th scope="row" className="px-6 py-4 font-medium text-heading whitespace-nowrap">
-                                                                    {order.id}
+                                                                className="odd:bg-neutral-primary even:bg-neutral-secondary-soft hover:bg-gray-100  transition"
+                                                            >
+                                                                <th scope="row" className="px-6 py-4 font-medium text-heading whitespace-nowrap">
+                                                                    <Link to={`/admin/orders/${order.id}`}>
+                                                                        {order.id}
+                                                                    </Link>
                                                                 </th>
                                                                 <td className="px-6 py-4">
                                                                     {order.user?.name}
@@ -156,7 +159,7 @@ function ShowOrder() {
                                 </div>
 
                             </div>
-                            <div>
+                            <div className='flex justify-end items-end'>
                                 {orders?.data && (
                                     <Pagination
                                         currentPage={orders.current_page}
