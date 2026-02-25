@@ -13,7 +13,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with(['items','user'])->orderBy('created_at', 'ASC')->paginate(5);
+        $orders = Order::with(['items', 'user'])->orderBy('created_at', 'ASC')->paginate(5);
 
         return response()->json([
             'status' => 200,
@@ -42,7 +42,7 @@ class OrderController extends Controller
      */
     public function show(string $id)
     {
-        $order = Order::with(['items','items.product','user'])->findOrFail($id);
+        $order = Order::with(['items', 'items.product', 'user'])->findOrFail($id);
 
         if (!$order) {
             return response()->json([
@@ -74,7 +74,22 @@ class OrderController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $order = Order::findOrFail($id);
+        if (!$order) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Order Not Found!",
+                'data' => []
+            ], 404);
+        }
+        $order->payment_status = $request->payment_status;
+        $order->status = $request->status;
+        $order->save();
+        return response()->json([
+            'status' => 200,
+            'message' => "Order Updated Successfully!",
+            'data' => $order
+        ], 200);
     }
 
     /**
