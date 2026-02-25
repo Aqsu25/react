@@ -23,6 +23,7 @@ import UserLogin from './components/UserLogin';
 import { Userrequireauth } from './components/User/Userrequireauth';
 import UserDashboard from './components/User/UserDashboard';
 import OrderConfirmation from './components/User/OrderConfirmation';
+import ShowOrder from './components/Admin/Order/ShowOrder';
 
 
 
@@ -159,7 +160,15 @@ function App() {
               </Adminrequireauth>
             }
           />
-
+          {/* orders */}
+          <Route
+            path="/orders"
+            element={
+              <Adminrequireauth>
+                <ShowOrder />
+              </Adminrequireauth>
+            }
+          />
         </Routes>
       </BrowserRouter>
       <ToastContainer />

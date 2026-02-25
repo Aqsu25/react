@@ -30,7 +30,7 @@ class Product extends Model
 
     public function product_sizes()
     {
-        return $this->belongsToMany(Size::class,'product_sizes','product_id','size_id');
+        return $this->belongsToMany(Size::class, 'product_sizes', 'product_id', 'size_id');
     }
     // img-url
     public function getImageUrlAttribute()
@@ -39,5 +39,10 @@ class Product extends Model
             return null;
         }
         return asset('storage/product/' . $this->image);
+    }
+
+    public function order_items()
+    {
+        return $this->belongsTo(OrderItem::class);
     }
 }

@@ -20,10 +20,14 @@ class Order extends Model
         'zip',
     ];
 
+
     public function items()
     {
-       return $this->hasMany(OrderItem::class);
+        return $this->hasMany(OrderItem::class);
     }
-    
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

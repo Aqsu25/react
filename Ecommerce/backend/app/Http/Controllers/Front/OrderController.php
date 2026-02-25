@@ -95,18 +95,26 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      */
-   public function show(string $id)
-{
-    $order = Order::with('items')->findOrFail($id);
+    public function show(string $id)
+    {
+        $order = Order::with(['items.product','user'])->findOrFail($id);
 
-    return response()->json([
-        'status' => 200,
-        'data' => [
-            'order' => $order,
-            'items' => $order->items
-        ]
-    ], 200);
-}
+        if (!$order) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Order Not Found!",
+                'data' => []
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'data' => [
+                'order' => $order,
+                'items' => $order->items
+            ]
+        ], 200);
+    }
 
     /**
      * Show the form for editing the specified resource.

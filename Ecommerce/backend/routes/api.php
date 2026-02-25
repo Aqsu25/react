@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\admin\BrandController;
 use App\Http\Controllers\admin\CategoryController;
+use App\Http\Controllers\admin\OrderController as AdminOrderController;
 use App\Http\Controllers\admin\ProductController;
 use App\Http\Controllers\admin\SizeController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -60,7 +61,9 @@ Route::group([
 //     return $request->user();
 // });
 Route::group(
-    ['middleware' => ['auth:sanctum', 'checkAdminRole']],
+    ['middleware' => ['auth:sanctum'
+    // , 'checkAdminRole'
+    ]],
     function () {
         Route::get('/admin/categories', [CategoryController::class, 'index']);
         Route::get('/admin/categories/{id}', [CategoryController::class, 'show']);
@@ -86,5 +89,8 @@ Route::group(
 
         // product-img-del
         Route::delete('/productimg-delete/{id}', [ProductController::class, 'imageDelete']);
+
+        // order
+         Route::resource('/orders', AdminOrderController::class);
     }
 );
