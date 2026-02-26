@@ -18,11 +18,11 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::orderBy('created_at', 'ASC')->get();
+        $order = Order::with('user')->where('user_id', Auth::id())->get();
 
         return response()->json([
             'status' => 200,
-            'data' => $orders,
+            'data' => $order,
         ]);
     }
 
@@ -97,7 +97,7 @@ class OrderController extends Controller
      */
     public function show(string $id)
     {
-        $order = Order::with(['items.product','user'])->findOrFail($id);
+        $order = Order::with(['items.product', 'user'])->findOrFail($id);
 
         if (!$order) {
             return response()->json([

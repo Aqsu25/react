@@ -1,25 +1,23 @@
 import React, { useEffect, useState } from 'react'
-import Layout from '../../common/Layout'
-import Sidebar from '../../common/Sidebar'
+import Layout from '../common/Layout'
+import Sidebar from './Sidebar'
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { adminToken, apiUrl } from '../../common/Http';
-import Loader from '../../common/Loader';
-import Empty from '../../common/Empty';
-import Pagination from '../../Pagination';
+import Empty from '../common/Empty';
+import Loader from '../common/Loader';
+import { apiUrl, UserToken } from '../common/Http';
 
-function ShowOrder() {
-    const [orders, setOrders] = useState([])
+function UserOrder() {
+    const [order, setOrder] = useState([])
     const [loader, setLoader] = useState(false)
-    const [currentPage, setCurrentPage] = useState(1)
-    const fetchOrders = async (page = 1) => {
+    const fetchorder = async () => {
         setLoader(true)
-        const res = await fetch(`${apiUrl}/orders?page=${page}`, {
+        const res = await fetch(`${apiUrl}/order`, {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json',
                 "Accept": "application/json",
-                "Authorization": `Bearer ${adminToken()}`
+                "Authorization": `Bearer ${UserToken()}`
 
             },
         })
@@ -27,34 +25,25 @@ function ShowOrder() {
         const result = await res.json();
 
         console.log("API Show Result:", result.data);
-        console.log("Token-Show:", adminToken());
+        console.log("Token-Show:", UserToken());
         if (result.status == 200) {
 
-            setOrders(result.data)
+            setOrder(result.data)
 
         } else {
             console.log("Something went wrong!")
             toast.error(result.error)
         }
-
-
     }
 
     useEffect(() => {
-        fetchOrders(currentPage);
-    }, [currentPage])
-
+        fetchorder();
+    }, [])
     return (
         <div >
             <Layout>
                 <div className='md:container md:mx-auto px-6 py-5 my-5'>
-                    <div className='flex justify-between my-4'>
-                        <h2 className='my-2 text-base md:text-2xl'>Orders</h2>
-                        <Link to="/admin/orders/create" className="bg-white text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow
-                    hover:bg-[#007595] hover:text-white">
-                            Create
-                        </Link>
-                    </div>
+                    <h2 className='my-2 text-base md:text-2xl'>User Dashboard</h2>
                     <div className="flex flex-col md:flex-row gap-3">
                         <div className="w-full md:w-1/4">
                             <Sidebar />
@@ -64,10 +53,11 @@ function ShowOrder() {
                                 <div className="relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base">
                                     {
                                         loader == true && <Loader />
-                                    }{
-                                        !loader && (!orders?.data || orders.data.length === 0) && <Empty text="Orders Not Found!" />}
+                                    }
                                     {
-                                        orders?.data && orders.data.length > 0 &&
+                                        !loader && !order && <Empty text="Order Not Found!" />}
+                                    {
+                                        order && order.length > 0 &&
                                         <div>
 
                                             <table className="w-full text-sm text-left rtl:text-right text-body">
@@ -100,14 +90,15 @@ function ShowOrder() {
                                                 </thead>
                                                 <tbody>
                                                     {
-                                                        orders.data.map((order, index) => (
+                                                        order.map((order, index) => (
 
                                                             <tr
                                                                 key={index}
                                                                 className="odd:bg-neutral-primary even:bg-neutral-secondary-soft hover:bg-gray-100  transition"
                                                             >
                                                                 <th scope="row" className="px-6 py-4 font-medium text-heading whitespace-nowrap">
-                                                                    <Link to={`/admin/orders/${order.id}`}>
+                                                                    <Link to={`/myorder/${order.id}`}
+                                                                    >
                                                                         {order.id}
                                                                     </Link>
                                                                 </th>
@@ -159,15 +150,6 @@ function ShowOrder() {
                                 </div>
 
                             </div>
-                            <div className='flex justify-end items-end'>
-                                {orders?.data && (
-                                    <Pagination
-                                        currentPage={orders.current_page}
-                                        lastPage={orders.last_page}
-                                        onPageChange={(page) => setCurrentPage(page)}
-                                    />
-                                )}
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -176,4 +158,4 @@ function ShowOrder() {
     )
 }
 
-export default ShowOrder
+export default UserOrder

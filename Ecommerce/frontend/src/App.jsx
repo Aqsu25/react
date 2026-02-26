@@ -25,6 +25,8 @@ import UserDashboard from './components/User/UserDashboard';
 import OrderConfirmation from './components/User/OrderConfirmation';
 import ShowOrder from './components/Admin/Order/ShowOrder';
 import OrderDetail from './components/Admin/Order/OrderDetail';
+import UserOrder from './components/User/UserOrder';
+import UserOrderDetail from './components/User/UserOrderDetail';
 
 
 
@@ -71,7 +73,24 @@ function App() {
               </Userrequireauth>
             }
           />
-
+          {/* user order */}
+          <Route
+            path="/myorder"
+            element={
+              <Userrequireauth>
+                <UserOrder />
+              </Userrequireauth>
+            }
+          />
+            {/* user order detail*/}
+          <Route
+            path="/myorder/:id"
+            element={
+              <Userrequireauth>
+                <UserOrderDetail />
+              </Userrequireauth>
+            }
+          />
 
           {/* admin routes */}
           <Route
@@ -172,7 +191,7 @@ function App() {
             }
           />
           {/* order-detail */}
-             <Route
+          <Route
             path="/admin/orders/:id"
             element={
               <Adminrequireauth>

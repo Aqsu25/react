@@ -42,7 +42,7 @@ Route::group([
     ]
 ], function () {
 
-    Route::resource('/orders', OrderController::class);
+    Route::resource('/order', OrderController::class);
 
     Route::get('/getUser', function (Request $request) {
 
