@@ -53,14 +53,14 @@ function Navbar() {
             </NavLink>
 
             <NavLink
-              to="/about"
+              to="/shop"
               className={({ isActive }) =>
                 isActive
                   ? "text-[#007595] font-semibold border-b-2 border-[#007595]"
                   : "text-gray-700 hover:text-[#007595]"
               }
             >
-              About
+            Shop
             </NavLink>
 
             <NavLink
@@ -75,7 +75,7 @@ function Navbar() {
             </NavLink>
 
             <NavLink
-              to="/contact"
+              to="/cart"
               className={({ isActive }) =>
                 isActive
                   ? "text-[#007595] font-semibold border-b-2 border-[#007595]"

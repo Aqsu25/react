@@ -37,6 +37,8 @@ function Product() {
             const result = await res.json();
             if (result.status === 200) {
                 console.log(result)
+                console.log(result.data.product_images)
+                console.log(result.data.product_images)
                 setProduct(result.data);
                 setProductImages(result.data.product_images)
                 setProductSizes(result.data.product_sizes)
@@ -63,14 +65,6 @@ function Product() {
             </Layout>
         );
     }
-
-    // const images = [
-    //     "https://images.unsplash.com/photo-1585386959984-a4155224a1ad",
-    //     "https://images.unsplash.com/photo-1593032465175-481ac7f401a0",
-    //     "https://images.unsplash.com/photo-1618354691438-25bc04584c23",
-    //     "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519",
-    //     "https://images.unsplash.com/photo-1605733160314-4fc7dac4bb16",
-    // ];
 
     const handleCart = () => {
         if (productSizes.length > 0 && !sizeSelected) {
@@ -118,8 +112,8 @@ function Product() {
                                         productImages.map((img, index) => (
                                             <SwiperSlide key={index}>
                                                 <img
-                                                    src={img.image_url}
-                                                    alt="Img"
+                                                    src={img.image}
+                                                    alt="Img-single"
                                                     className="w-full h-[420px] object-cover rounded-xl"
                                                 />
                                             </SwiperSlide>
@@ -142,8 +136,8 @@ function Product() {
                                         productImages.map((img, index) => (
                                             <SwiperSlide key={index}>
                                                 <img
-                                                    src={img.image_url}
-                                                    alt="Img"
+                                                    src={img.product_images}
+                                                    alt="Img-pro"
                                                     className="h-24 w-full object-cover rounded-lg border hover:border-[#007595] transition"
                                                 />
                                             </SwiperSlide>
