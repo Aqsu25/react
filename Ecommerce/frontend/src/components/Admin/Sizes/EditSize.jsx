@@ -6,8 +6,7 @@ import { adminToken, apiUrl } from '../../common/Http';
 import { useNavigate } from 'react-router';
 import { useParams } from 'react-router-dom';
 
-
-function Editbrand() {
+function EditSize() {
     const [disable, setDisable] = useState(false)
     const navigate = useNavigate()
     const { id } = useParams();
@@ -18,7 +17,7 @@ function Editbrand() {
     useEffect(() => {
         const fetchApi = async () => {
             try {
-                const res = await fetch(`${apiUrl}/admin/brands/${id}`, {
+                const res = await fetch(`${apiUrl}/sizes/${id}`, {
                     method: "GET",
                     headers: {
                         'Content-Type': 'application/json',
@@ -33,10 +32,12 @@ function Editbrand() {
                 }
                 setDisable(false)
                 const result = await res.json();
+
                 if (result.status == 200) {
+                    console.log("Result=", result)
                     reset({
                         name: result.data.name,
-                        status: result.data.status,
+
                     })
                 }
             }
@@ -48,10 +49,12 @@ function Editbrand() {
         fetchApi();
     }, [id])
 
-    // updateBrand
-    const updateBrand = async (data) => {
+    // updateSize
+    const updateSize = async (data) => {
+        console.log(data)
         try {
-            const res = await fetch(`${apiUrl}/admin/brands/${id}`, {
+
+            const res = await fetch(`${apiUrl}/sizes/${id}`, {
                 method: "PUT",
                 headers: {
                     'Content-Type': 'application/json',
@@ -63,6 +66,7 @@ function Editbrand() {
 
             })
             if (!res.ok) {
+                console.log(res)
                 throw new Error('Network response was not ok');
             }
             setDisable(false)
@@ -70,7 +74,7 @@ function Editbrand() {
             console.log("API Show Result:", result.data);
 
             if (result.status == 200) {
-                navigate('/admin/brands')
+                navigate('/admin/sizes')
                 toast.success(result.message)
             }
         }
@@ -80,19 +84,17 @@ function Editbrand() {
 
         }
     }
-
-
     return (
         <>
-            <Sample title='Brand/Edit' btnText='Back' to='/admin/brands'>
+            <Sample title='Size/Edit' btnText='Back' to='/admin/sizes'>
 
-                <form onSubmit={handleSubmit(updateBrand)}>
+                <form onSubmit={handleSubmit(updateSize)}>
                     <div className="flex flex-wrap -mx-3 mb-6">
                         <div className="w-full px-3 mb-6 md:mb-0">
                             <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2" htmlFor="grid-first-name">
                                 Name
                             </label>
-                            <input 
+                            <input
                                 {
                                 ...register("name",
                                     {
@@ -100,33 +102,6 @@ function Editbrand() {
                                     })}
                                 className="appearance-none block w-full bg-gray-200 text-black border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" id="grid-first-name" type="text" placeholder="Jane" />
                             {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap -mx-3 mb-2">
-
-                        <div className="w-full px-3 mb-6 md:mb-0">
-                            <label className="block uppercase tracking-wide text-black text-xs font-bold mb-2" htmlFor="grid-state">
-                                Status
-                            </label>
-
-                            <div className="relative">
-                                <select
-                                    {
-                                    ...register("status",
-                                        {
-                                            required: "Please Choose Atleast One Option.",
-                                        })}
-                                    className="block appearance-none w-full bg-gray-200 border border-gray-200 text-black py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
-                                    <option value="">Select Status</option>
-                                    <option value="1">Active</option>
-                                    <option value="0">Block</option>
-                                </select>
-                                {errors.status && <p className="text-red-500 text-sm">{errors.status.message}</p>}
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-black">
-                                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                                </div>
-                            </div>
                         </div>
                     </div>
                     <button disabled={disable}
@@ -138,4 +113,4 @@ function Editbrand() {
     )
 }
 
-export default Editbrand
+export default EditSize

@@ -8,8 +8,9 @@ use App\Models\ProductImg;
 use App\Models\ProductSize;
 use App\Models\TempImg;
 use App\Traits\ImageUpload;
-use Illuminate\Container\Attributes\Auth;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Mews\Purifier\Facades\Purifier;
@@ -56,7 +57,7 @@ class ProductController extends Controller
             'status' => 'required|integer',
             'is_Featured' => 'required|in:yes,no',
             'gallery' => 'nullable|array',
-            'sizes' => 'required|array',
+            'sizes' => 'nullable|array',
             'sizes.*' => 'integer|exists:sizes,id',
         ]);
 
@@ -80,7 +81,6 @@ class ProductController extends Controller
             'qty' => $request->qty,
             'sku' => $request->sku,
             'status' => $request->status,
-            'barcode' => $request->barcode,
             'is_Featured' => $request->is_Featured,
         ]);
         // sizes array
@@ -178,13 +178,12 @@ class ProductController extends Controller
             'brand_id' => 'nullable|nullable|exists:brands,id',
             'sku' => 'required|unique:products,sku,' . $id,
             'qty' => 'nullable|integer',
-            'barcode' => 'nullable',
             'status' => 'required|integer',
             'is_Featured' => 'required|in:yes,no',
             'new_images.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'old_image_ids' => 'nullable|array',
             'old_image_ids.*' => 'integer|exists:product_imgs,id',
-            'sizes' => 'required|array',
+            'sizes' => 'nullable|array',
             'sizes.*' => 'integer|exists:sizes,id',
 
         ]);
@@ -208,7 +207,6 @@ class ProductController extends Controller
             'qty' => $request->qty,
             'sku' => $request->sku,
             'status' => $request->status,
-            'barcode' => $request->barcode,
             'is_Featured' => $request->is_Featured,
         ]);
         // if user remove any old img from db

@@ -61,7 +61,20 @@ class SizeController extends Controller
      */
     public function show(string $id)
     {
-        //
+     $size = Size::findOrFail($id);
+
+        if ($size == null) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Size Not Found!",
+                'data' => []
+            ], 404);
+        }
+        return response()->json([
+            'status' => 200,
+            'message' => "Size Show Successfully!",
+            'data' => $size,
+        ], 200);
     }
 
     /**
@@ -77,7 +90,35 @@ class SizeController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+          $size = Size::findOrFail($id);
+
+        if ($size == null) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Size Not Found!",
+                'data' => []
+            ], 404);
+        }
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|min:3|unique:sizes,name,' . $id,
+        
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors()
+            ], 400);
+        }
+        $size->update([
+            'name' => $request->name,
+        ]);
+
+        return response()->json([
+            'status' => 200,
+            'message' => "Size Updated Successfully!",
+            'data' => $size,
+        ], 200);
     }
 
     /**
@@ -85,6 +126,20 @@ class SizeController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+         $size = Size::findOrFail($id);
+
+        if ($size == null) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Size Not Found!",
+                'data' => []
+            ], 404);
+        }
+        $size->delete();
+        return response()->json([
+            'status' => 200,
+            'message' => "Size Deleted Successfully!",
+            'data' => $size,
+        ], 200);
     }
 }

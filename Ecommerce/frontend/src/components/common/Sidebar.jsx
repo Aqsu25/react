@@ -7,9 +7,10 @@ function Sidebar() {
     const { logout } = useContext(AdminAuthContext);
     const sideBarLinks = [
         { name: "Dashboard", path: "/admin/dashboard" },
-        { name: "Login", path: "/admin/login" },
+       
         { name: "Brands", path: "/admin/brands" },
         { name: "Category", path: "/admin/categories" },
+        { name: "Sizes", path: "/admin/sizes" },
         { name: "Products", path: "/products" },
         { name: "Shipping", path: "/admin/shipping" },
         { name: "Orders", path: "/admin/orders" },

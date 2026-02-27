@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons'; // Specific icon import
-import { MultiSelect } from 'primereact/multiselect';
 
 
 
@@ -47,7 +46,6 @@ function ProductCreate({ placeholder }) {
             formData.append("price", data.price);
             formData.append("compare_price", data.compare_price || "");
             formData.append("sku", data.sku || "");
-            formData.append("barcode", data.barcode || "");
             formData.append("qty", Number(data.qty));
             formData.append("status", data.status);
             formData.append("is_Featured", data.is_Featured);

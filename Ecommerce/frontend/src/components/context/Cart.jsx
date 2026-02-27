@@ -22,12 +22,15 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     const fetchApi = async () => {
       try {
+        const token = UserToken();
+        if (!token)
+          return;
         const res = await fetch(`${apiUrl}/customer-shipping`, {
           method: "GET",
           headers: {
             'Content-Type': 'application/json',
             "Accept": "application/json",
-            "Authorization": `Bearer ${UserToken()}`
+            "Authorization": `Bearer ${token}`
 
           },
 
@@ -38,6 +41,7 @@ export const CartProvider = ({ children }) => {
 
         const result = await res.json();
         if (result.status == 200) {
+          console.log("Shippiing", result)
           setShippingCost(result.data.shipping_charge)
         }
 
@@ -80,13 +84,13 @@ export const CartProvider = ({ children }) => {
       setCartData([...cartData, newItem]);
     }
   };
+  // shipping
   const shipping = () => {
-    let shippingcharge = 0;
-    shippingCost.map(item =>
-      shippingcharge +=
-      item.qty * shippingCost
-    )
-    return shippingcharge;
+    const subTotalAmount = subTotal();
+    if (subTotalAmount >= 5000) {
+      return 0;
+    }
+    return shippingCost;
   };
   // subtotal
   const subTotal = () => {

@@ -19,6 +19,7 @@ class Product extends Model
         'sku',
         'status',
         'barcode',
+        'user_id',
         'is_Featured',
     ];
     protected $appends = ['image_url'];

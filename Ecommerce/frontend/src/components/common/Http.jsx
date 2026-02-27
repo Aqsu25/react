@@ -7,5 +7,5 @@ export const adminToken=()=>{
 
 export const UserToken=()=>{
     const data=JSON.parse(localStorage.getItem("userInfo"));
-    return data.token;
+    return data?.token || null;
 }

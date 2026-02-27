@@ -29,6 +29,9 @@ import UserOrder from './components/User/UserOrder';
 import UserOrderDetail from './components/User/UserOrderDetail';
 import Shipping from './components/Admin/Shipping/Shipping';
 import Profile from './components/User/Profile';
+import CreateSize from './components/Admin/Sizes/CreateSize';
+import ShowSize from './components/Admin/Sizes/ShowSize';
+import EditSize from './components/Admin/Sizes/EditSize';
 
 
 
@@ -169,6 +172,38 @@ function App() {
               </Adminrequireauth>
             }
           />
+          {/* product-size-create
+           */}
+          <Route
+            path=
+            "/admin/sizes/create"
+            element={
+              <Adminrequireauth>
+                <CreateSize />
+              </Adminrequireauth>
+            }
+          />
+          {/* show size */}
+          <Route
+            path=
+            "/admin/sizes/"
+            element={
+              <Adminrequireauth>
+                <ShowSize />
+              </Adminrequireauth>
+            }
+          />
+          {/* edit size */}
+           <Route
+            path=
+            "/admin/size/:id/edit"
+            element={
+              <Adminrequireauth>
+                <EditSize />
+              </Adminrequireauth>
+            }
+          />
+
           {/* product-Routes */}
           <Route
             path="/products"
