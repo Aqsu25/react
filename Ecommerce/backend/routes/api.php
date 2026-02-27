@@ -4,12 +4,15 @@ use App\Http\Controllers\admin\BrandController;
 use App\Http\Controllers\admin\CategoryController;
 use App\Http\Controllers\admin\OrderController as AdminOrderController;
 use App\Http\Controllers\admin\ProductController;
+use App\Http\Controllers\admin\ProfileController;
+use App\Http\Controllers\admin\ShippingChargeController;
 use App\Http\Controllers\admin\SizeController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Front\OrderController;
 use App\Http\Controllers\Front\ProducController;
+use App\Http\Controllers\Front\ShippingController;
 use App\Http\Controllers\TempController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,6 +47,13 @@ Route::group([
 
     Route::resource('/order', OrderController::class);
 
+    // profile
+    Route::resource('/myaccount', ProfileController::class);
+
+
+    // shipping
+    Route::get('/customer-shipping', [ShippingController::class, 'getShippedUser']);
+// user
     Route::get('/getUser', function (Request $request) {
 
         return response()->json([
@@ -61,8 +71,9 @@ Route::group([
 //     return $request->user();
 // });
 Route::group(
-    ['middleware' => ['auth:sanctum'
-    // , 'checkAdminRole'
+    ['middleware' => [
+        'auth:sanctum'
+        // , 'checkAdminRole'
     ]],
     function () {
         Route::get('/admin/categories', [CategoryController::class, 'index']);
@@ -91,6 +102,12 @@ Route::group(
         Route::delete('/productimg-delete/{id}', [ProductController::class, 'imageDelete']);
 
         // order
-         Route::resource('/orders', AdminOrderController::class);
+        Route::resource('/orders', AdminOrderController::class);
+
+        //  shipping-charge-get
+        Route::get('/admin/getCharge', [ShippingChargeController::class, 'getShipped']);
+
+        //  save shipping cost
+        Route::put('/admin/saveCharge', [ShippingChargeController::class, 'getUpdate']);
     }
 );

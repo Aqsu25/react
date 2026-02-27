@@ -11,6 +11,7 @@ function Sidebar() {
         { name: "Brands", path: "/admin/brands" },
         { name: "Category", path: "/admin/categories" },
         { name: "Products", path: "/products" },
+        { name: "Shipping", path: "/admin/shipping" },
         { name: "Orders", path: "/admin/orders" },
         { name: "Users", path: "/users" },
         { name: "Change Password", path: "change/password" },

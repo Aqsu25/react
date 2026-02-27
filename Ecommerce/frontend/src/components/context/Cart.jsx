@@ -1,14 +1,16 @@
 import { createContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { apiUrl, UserToken } from "../common/Http";
 
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
+  const [shippingCost, setShippingCost] = useState(0);
   const [cartData, setCartData] = useState(() => {
     const cart = localStorage.getItem("cart");
     return cart ? JSON.parse(cart) : [];
   });
-
+  // cart data
   useEffect(() => {
     try {
       localStorage.setItem("cart", JSON.stringify(cartData));
@@ -16,6 +18,40 @@ export const CartProvider = ({ children }) => {
       console.error("Failed to save cart to localStorage:", error);
     }
   }, [cartData]);
+  // shipping cost fetch
+  useEffect(() => {
+    const fetchApi = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/customer-shipping`, {
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            "Accept": "application/json",
+            "Authorization": `Bearer ${UserToken()}`
+
+          },
+
+        })
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const result = await res.json();
+        if (result.status == 200) {
+          setShippingCost(result.data.shipping_charge)
+        }
+
+      }
+      catch (error) {
+        setShippingCost(0)
+        console.error("Fetch error:", error);
+        toast.error("Something Went Wrong!")
+      }
+    }
+    fetchApi();
+  }, [])
+
+
 
   const addToCart = (product, size = null) => {
     const existingItem = cartData.find(
@@ -45,11 +81,18 @@ export const CartProvider = ({ children }) => {
     }
   };
   const shipping = () => {
-    return 0;
+    let shippingcharge = 0;
+    shippingCost.map(item =>
+      shippingcharge +=
+      item.qty * shippingCost
+    )
+    return shippingcharge;
   };
+  // subtotal
   const subTotal = () => {
     return cartData.reduce((total, item) => total + item.qty * item.price, 0);
   };
+  // grandtotal
   const grandTotal = () => {
     return shipping() + subTotal();
   };

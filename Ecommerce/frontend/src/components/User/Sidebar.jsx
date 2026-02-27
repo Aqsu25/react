@@ -5,8 +5,7 @@ import { UserAuthContext } from '../context/UserAuth';
 function Sidebar() {
      const { logout } = useContext(UserAuthContext);
         const sideBarLinks = [
-            { name: "Dashboard", path: "/user/dashboard" },
-            { name: "Brands", path: "" },
+            { name: "My Account", path: "/myaccount" },
             { name: "Products", path: "" },
             { name: "Orders", path: "/myorder" },
             { name: "Change Password", path: "" },

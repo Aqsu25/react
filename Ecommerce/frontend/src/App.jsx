@@ -6,7 +6,7 @@ import Cart from './components/Cart/Cart';
 import Checkout from './components/Cart/Checkout/Checkout';
 import Contact from './components/Contact';
 import Login from './components/Admin/Login';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import Dashboard from './components/Admin/Dashboard';
 import { Adminrequireauth } from './components/Admin/Adminrequireauth';
 import ShowCategory from './components/Admin/Category/ShowCategory';
@@ -27,6 +27,8 @@ import ShowOrder from './components/Admin/Order/ShowOrder';
 import OrderDetail from './components/Admin/Order/OrderDetail';
 import UserOrder from './components/User/UserOrder';
 import UserOrderDetail from './components/User/UserOrderDetail';
+import Shipping from './components/Admin/Shipping/Shipping';
+import Profile from './components/User/Profile';
 
 
 
@@ -45,6 +47,8 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin/login" element={<Login />} />
+
+          {/* user routes */}
           <Route path="/login" element={<UserLogin />} />
 
           <Route
@@ -55,6 +59,16 @@ function App() {
               </Userrequireauth>
             }
           />
+          {/* profile */}
+          <Route
+            path="/myaccount"
+            element={
+              <Userrequireauth>
+                <Profile />
+              </Userrequireauth>
+            }
+          />
+
           {/* checkout */}
           <Route
             path="/checkout"
@@ -82,7 +96,7 @@ function App() {
               </Userrequireauth>
             }
           />
-            {/* user order detail*/}
+          {/* user order detail*/}
           <Route
             path="/myorder/:id"
             element={
@@ -199,6 +213,17 @@ function App() {
               </Adminrequireauth>
             }
           />
+
+          {/* SHIPPING */}
+          <Route
+            path="/admin/shipping"
+            element={
+              <Adminrequireauth>
+                <Shipping />
+              </Adminrequireauth>
+            }
+          />
+
         </Routes>
       </BrowserRouter>
       <ToastContainer />

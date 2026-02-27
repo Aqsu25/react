@@ -91,7 +91,7 @@ function ShowCategory() {
                                     {
                                         loader == true && <Loader />
                                     }{
-                                        loader == false && categories.length == 0 && <Empty text='Categories Not Found!' />
+                                        loader == false && categories.length == 0 && <Empty text='Categories Not Created Yet!' />
                                     }
                                     {
                                         categories && categories.length > 0 &&

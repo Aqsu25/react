@@ -120,7 +120,7 @@ function UserLogin() {
                         disabled={isSubmitting}
                         className="w-full bg-[#007595] text-white py-2 rounded-lg font-semibold transition-all duration-300 hover:bg-slate-900 hover:scale-[1.02] active:scale-95 disabled:opacity-50"
                     >
-                        {isSubmitting ? "Registering..." : "Sign In"}
+                        {isSubmitting ? "Logging in..." : "Sign In"}
                     </button>
 
                     <p className="text-center text-sm mt-6">

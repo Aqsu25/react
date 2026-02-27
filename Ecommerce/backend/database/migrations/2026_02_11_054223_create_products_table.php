@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('compare_price', 8, 2)->nullable();
             $table->string('image')->nullable();
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('brand_id')->nullable()->constrained()->onDelete('cascade');
             $table->integer('qty')->nullable();
             $table->string('sku');
