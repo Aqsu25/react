@@ -44,11 +44,9 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        if ($isFirstUser) {
-            $user->assignRole('admin');
-        } else {
-            $user->assignRole('user');
-        }
+
+        $user->assignRole('user');
+
 
 
         event(new Registered($user));
@@ -59,32 +57,6 @@ class RegisteredUserController extends Controller
             'status' => 200,
             'message' => 'User register successfully',
             'data' => $user
-        ]);
-    }
-
-    public function login(LoginRequest $request)
-    {
-        try {
-            $request->authenticate();
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'status' => 401,
-                'message' => 'Invalid credentials',
-                'errors' => $e->errors()
-            ], 401);
-        }
-
-        $user = $request->user();
-
-        $abilities = $user->hasRole('admin') ? ['admin'] : ['user'];
-        $token = $user->createToken('auth_token', $abilities)->plainTextToken;
-
-        return response()->json([
-            'message' => 'Login Successfully!',
-            'token' => $token,
-            'token_type' => 'Bearer',
-            'status' => 200,
-            'user' => $user
         ]);
     }
 }

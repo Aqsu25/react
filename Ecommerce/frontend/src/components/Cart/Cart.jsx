@@ -20,17 +20,13 @@ function Cart() {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-10">
-
-   
         <h2 className="text-4xl font-bold text-center mb-12 text-[#007595]">
           Shopping Cart
         </h2>
 
         {isEmpty && (
           <div className="text-center py-20">
-            <p className="text-gray-500 text-lg">
-              🛒 Your cart is empty
-            </p>
+            <p className="text-gray-500 text-lg">🛒 Your cart is empty</p>
             <Link
               to="/shop"
               className="mt-4 inline-block bg-[#007595] text-white px-6 py-2 rounded-lg hover:bg-black transition"
@@ -42,7 +38,6 @@ function Cart() {
 
         {!isEmpty && (
           <div className="grid lg:grid-cols-3 gap-8">
-
             <div className="lg:col-span-2 space-y-6">
               {cartData.map((item) => (
                 <div
@@ -59,9 +54,7 @@ function Cart() {
                       {item.title}
                     </h3>
 
-                    <p className="text-gray-500 mt-1">
-                      Price: ${item.price}
-                    </p>
+                    <p className="text-gray-500 mt-1">Price: ${item.price}</p>
 
                     <div className="flex items-center gap-4 mt-4">
                       <button
@@ -69,24 +62,23 @@ function Cart() {
                           updateCartqty(
                             item.product_id,
                             item.qty - 1,
-                            item.size
+                            item.size,
                           )
                         }
+                        disabled={item.qty <= 1}
                         className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
                       >
                         −
                       </button>
 
-                      <span className="font-bold text-lg">
-                        {item.qty}
-                      </span>
+                      <span className="font-bold text-lg">{item.qty}</span>
 
                       <button
                         onClick={() =>
                           updateCartqty(
                             item.product_id,
                             item.qty + 1,
-                            item.size
+                            item.size,
                           )
                         }
                         className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
@@ -96,7 +88,6 @@ function Cart() {
                     </div>
                   </div>
 
-              
                   <button
                     onClick={() => removeItem(item.id)}
                     className="text-red-500 hover:scale-110 transition duration-300"
@@ -107,7 +98,6 @@ function Cart() {
               ))}
             </div>
 
-          
             <div className="bg-white rounded-2xl shadow-xl p-8 h-fit sticky top-10">
               <h3 className="text-2xl font-bold mb-6">Order Summary</h3>
 
@@ -126,12 +116,14 @@ function Cart() {
                 <span>${grandTotal()}</span>
               </div>
 
-              <Link to="/checkout" className="w-full mt-6 bg-[#007595] text-white py-3 rounded-xl flex justify-center items-center gap-2 hover:bg-black transition duration-300 hover:scale-105">
+              <Link
+                to="/checkout"
+                className="w-full mt-6 bg-[#007595] text-white py-3 rounded-xl flex justify-center items-center gap-2 hover:bg-black transition duration-300 hover:scale-105"
+              >
                 <FontAwesomeIcon icon={faShoppingCart} />
                 Checkout
               </Link>
             </div>
-
           </div>
         )}
       </div>

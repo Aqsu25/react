@@ -29,11 +29,11 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
-        $adminRole = Role::create(['name' => 'admin']);
-        $userRole  = Role::create(['name' => 'user']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $userRole  = Role::firstOrCreate(['name' => 'user']);
 
         $adminRole->givePermissionTo(Permission::all());
 
@@ -45,8 +45,10 @@ class RolePermissionSeeder extends Seeder
         // assignrole
         $admin = User::firstOrCreate(
             ['email' => 'admin@gmail.com'],
-            ['name' => 'Admin',
-            'password' => Hash::make('password')],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('password')
+            ],
         );
 
         $admin->assignRole('admin');
