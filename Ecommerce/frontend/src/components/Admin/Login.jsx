@@ -38,7 +38,7 @@ function Login() {
         const adminInfo = {
           token: result.token,
           name: result.user.name,
-          role: result.user.role,
+          role: result.role,
           remember: data.remember || false,
         };
 
@@ -52,7 +52,11 @@ function Login() {
 
         toast.success("Login Successful!");
 
-        navigate("/admin/dashboard");
+        if (result.role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/user/dashboard");
+        }
       } else {
         toast.error(result.message || "Login Failed");
       }
