@@ -1,42 +1,39 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from "./components/Home"
-import Shop from "./components/Shop"
-import Product from './components/Product/Product';
-import Cart from './components/Cart/Cart';
-import Checkout from './components/Cart/Checkout/Checkout';
-import Contact from './components/Contact';
-import Login from './components/Admin/Login';
-import { ToastContainer } from 'react-toastify';
-import Dashboard from './components/Admin/Dashboard';
-import { Adminrequireauth } from './components/Admin/Adminrequireauth';
-import ShowCategory from './components/Admin/Category/ShowCategory';
-import CreateCategory from './components/Admin/Category/CreateCategory';
-import EditCategory from './components/Admin/Category/EditCategory';
-import Showbrand from './components/Admin/Brand/Showbrand';
-import Createbrand from './components/Admin/Brand/Createbrand';
-import Editbrand from './components/Admin/Brand/Editbrand';
-import ProductCreate from './components/Admin/Product/ProductCreate';
-import ProductShow from './components/Admin/Product/ProductShow';
-import ProductEdit from './components/Admin/Product/ProductEdit';
-import Register from './components/Register';
-import UserLogin from './components/UserLogin';
-import { Userrequireauth } from './components/User/Userrequireauth';
-import UserDashboard from './components/User/UserDashboard';
-import OrderConfirmation from './components/User/OrderConfirmation';
-import ShowOrder from './components/Admin/Order/ShowOrder';
-import OrderDetail from './components/Admin/Order/OrderDetail';
-import UserOrder from './components/User/UserOrder';
-import UserOrderDetail from './components/User/UserOrderDetail';
-import Shipping from './components/Admin/Shipping/Shipping';
-import Profile from './components/User/Profile';
-import CreateSize from './components/Admin/Sizes/CreateSize';
-import ShowSize from './components/Admin/Sizes/ShowSize';
-import EditSize from './components/Admin/Sizes/EditSize';
-
-
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./components/Home";
+import Shop from "./components/Shop";
+import Product from "./components/Product/Product";
+import Cart from "./components/Cart/Cart";
+import Checkout from "./components/Cart/Checkout/Checkout";
+import Contact from "./components/Contact";
+import Login from "./components/Admin/Login";
+import { ToastContainer } from "react-toastify";
+import Dashboard from "./components/Admin/Dashboard";
+import { Adminrequireauth } from "./components/Admin/Adminrequireauth";
+import ShowCategory from "./components/Admin/Category/ShowCategory";
+import CreateCategory from "./components/Admin/Category/CreateCategory";
+import EditCategory from "./components/Admin/Category/EditCategory";
+import Showbrand from "./components/Admin/Brand/Showbrand";
+import Createbrand from "./components/Admin/Brand/Createbrand";
+import Editbrand from "./components/Admin/Brand/Editbrand";
+import ProductCreate from "./components/Admin/Product/ProductCreate";
+import ProductShow from "./components/Admin/Product/ProductShow";
+import ProductEdit from "./components/Admin/Product/ProductEdit";
+import Register from "./components/Register";
+import UserLogin from "./components/UserLogin";
+import { Userrequireauth } from "./components/User/Userrequireauth";
+import UserDashboard from "./components/User/UserDashboard";
+import OrderConfirmation from "./components/User/OrderConfirmation";
+import ShowOrder from "./components/Admin/Order/ShowOrder";
+import OrderDetail from "./components/Admin/Order/OrderDetail";
+import UserOrder from "./components/User/UserOrder";
+import UserOrderDetail from "./components/User/UserOrderDetail";
+import Shipping from "./components/Admin/Shipping/Shipping";
+import Profile from "./components/User/Profile";
+import CreateSize from "./components/Admin/Sizes/CreateSize";
+import ShowSize from "./components/Admin/Sizes/ShowSize";
+import EditSize from "./components/Admin/Sizes/EditSize";
 
 function App() {
-
   return (
     <>
       <BrowserRouter>
@@ -49,10 +46,7 @@ function App() {
           <Route path="/product/:id" element={<Product />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/admin/login" element={<Login />} />
-
-          {/* user routes */}
-          <Route path="/login" element={<UserLogin />} />
+          <Route path="/login" element={<Login />} />
 
           <Route
             path="/user/dashboard"
@@ -164,8 +158,7 @@ function App() {
             }
           />
           <Route
-            path=
-            "/admin/brands/:id/edit"
+            path="/admin/brands/:id/edit"
             element={
               <Adminrequireauth>
                 <Editbrand />
@@ -175,8 +168,7 @@ function App() {
           {/* product-size-create
            */}
           <Route
-            path=
-            "/admin/sizes/create"
+            path="/admin/sizes/create"
             element={
               <Adminrequireauth>
                 <CreateSize />
@@ -185,8 +177,7 @@ function App() {
           />
           {/* show size */}
           <Route
-            path=
-            "/admin/sizes/"
+            path="/admin/sizes/"
             element={
               <Adminrequireauth>
                 <ShowSize />
@@ -194,9 +185,8 @@ function App() {
             }
           />
           {/* edit size */}
-           <Route
-            path=
-            "/admin/size/:id/edit"
+          <Route
+            path="/admin/size/:id/edit"
             element={
               <Adminrequireauth>
                 <EditSize />
@@ -222,8 +212,7 @@ function App() {
             }
           />
           <Route
-            path=
-            "/products/:id/edit"
+            path="/products/:id/edit"
             element={
               <Adminrequireauth>
                 <ProductEdit />
@@ -258,12 +247,11 @@ function App() {
               </Adminrequireauth>
             }
           />
-
         </Routes>
       </BrowserRouter>
       <ToastContainer />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

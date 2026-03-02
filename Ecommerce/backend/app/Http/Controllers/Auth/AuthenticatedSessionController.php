@@ -26,13 +26,14 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
-        $abilities = $user->hasRole('admin') ? ['admin'] : ['user'];
-        $token = $user->createToken('auth_token', $abilities)->plainTextToken;
+
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'token' => $token,
             'token_type' => 'Bearer',
             'status' => 200,
+            'role' => $user->getRoleNames(),
             'user' => $user
         ]);
     }

@@ -16,7 +16,7 @@ use App\Http\Controllers\Front\ShippingController;
 use App\Http\Controllers\TempController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/admin/login', [AuthenticatedSessionController::class, 'store']);
+// Route::post('/admin/login', [AuthenticatedSessionController::class, 'store']);
 
 // latest
 Route::get('/latestProduct', [ProducController::class, 'latestProduct']);
@@ -33,15 +33,16 @@ Route::get('/getProduct/{id}', [ProducController::class, 'getProduct']);
 // register
 Route::post('/register', [RegisteredUserController::class, 'store']);
 // login
-Route::post('/login', [RegisteredUserController::class, 'login']);
+// Route::post('/login', [RegisteredUserController::class, 'login']);
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 
 
 
 
 Route::group([
     'middleware' => [
-        'auth:sanctum'
-        //  ,'checkUserRole'
+        'auth:sanctum',
+        'checkUserRole'
     ]
 ], function () {
 
@@ -53,7 +54,7 @@ Route::group([
 
     // shipping
     Route::get('/customer-shipping', [ShippingController::class, 'getShippedUser']);
-// user
+    // user
     Route::get('/getUser', function (Request $request) {
 
         return response()->json([
@@ -72,8 +73,8 @@ Route::group([
 // });
 Route::group(
     ['middleware' => [
-        'auth:sanctum'
-        // , 'checkAdminRole'
+        'auth:sanctum',
+        'checkAdminRole'
     ]],
     function () {
         Route::get('/admin/categories', [CategoryController::class, 'index']);
