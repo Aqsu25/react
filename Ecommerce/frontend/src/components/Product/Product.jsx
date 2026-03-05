@@ -35,12 +35,17 @@ function Product() {
     const [comment, setComment] = useState([]);
     const { id } = useParams();
     // ratings
-    const [ratings, setRatimgs] = useState([]);
+    const [ratings, setRatings] = useState([]);
     // LIKES
-    const [likes, setLikes] = useState();
+    const [likes, setLikes] = useState(() => {
+
+        const productLike = localStorage.setItem("productLikes",);
+        return productLike ? productLike : null;
+    }
+    );
     // like count
     const [likesCount, setLikesCount] = useState(0);
- 
+
 
 
 
@@ -66,6 +71,9 @@ function Product() {
                 setProductImages(result.data.product_images)
 
                 setProductSizes(result.data.product_sizes)
+
+                setLikes(result.data.liked);
+                setLikesCount(result.data.likes_count);
             }
 
         } catch (error) {
@@ -489,15 +497,15 @@ function Product() {
                                                                     <button
                                                                         onClick={() => likeComment(com.id)}
                                                                         className="w-5 h-5 flex items-center justify-center group">
-                                                                        {com.likes
-                                                                               ?
-                                                                                <svg className="text-red-500 group-hover:text-gray-800 transition-all duration-700 ease-in-out" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
-                                                                                    <path d="M1.62629 2.43257C3.64001 0.448687 6.82082 0.311339 8.99614 2.02053C11.1723 0.311339 14.3589 0.448687 16.3726 2.43257L16.3734 2.43334C18.5412 4.57611 18.5412 8.04382 16.3804 10.1867L16.378 10.1891L9.46309 16.9764C9.20352 17.2312 8.78765 17.2309 8.52844 16.9758L1.62629 10.1821C-0.542748 8.04516 -0.542748 4.56947 1.62629 2.43257Z" fill="currentColor" />
-                                                                                </svg>
-                                                                                :
-                                                                                <svg className="text-[#007595] group-hover:text-gray-800 transition-all duration-700 ease-in-out" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
-                                                                                    <path d="M1.62629 2.43257C3.64001 0.448687 6.82082 0.311339 8.99614 2.02053C11.1723 0.311339 14.3589 0.448687 16.3726 2.43257L16.3734 2.43334C18.5412 4.57611 18.5412 8.04382 16.3804 10.1867L16.378 10.1891L9.46309 16.9764C9.20352 17.2312 8.78765 17.2309 8.52844 16.9758L1.62629 10.1821C-0.542748 8.04516 -0.542748 4.56947 1.62629 2.43257Z" fill="currentColor" />
-                                                                                </svg>
+                                                                        {com.liked
+                                                                            ?
+                                                                            <svg className="text-red-500 group-hover:text-gray-800 transition-all duration-700 ease-in-out" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                                                                <path d="M1.62629 2.43257C3.64001 0.448687 6.82082 0.311339 8.99614 2.02053C11.1723 0.311339 14.3589 0.448687 16.3726 2.43257L16.3734 2.43334C18.5412 4.57611 18.5412 8.04382 16.3804 10.1867L16.378 10.1891L9.46309 16.9764C9.20352 17.2312 8.78765 17.2309 8.52844 16.9758L1.62629 10.1821C-0.542748 8.04516 -0.542748 4.56947 1.62629 2.43257Z" fill="currentColor" />
+                                                                            </svg>
+                                                                            :
+                                                                            <svg className="text-[#007595] group-hover:text-gray-800 transition-all duration-700 ease-in-out" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                                                                <path d="M1.62629 2.43257C3.64001 0.448687 6.82082 0.311339 8.99614 2.02053C11.1723 0.311339 14.3589 0.448687 16.3726 2.43257L16.3734 2.43334C18.5412 4.57611 18.5412 8.04382 16.3804 10.1867L16.378 10.1891L9.46309 16.9764C9.20352 17.2312 8.78765 17.2309 8.52844 16.9758L1.62629 10.1821C-0.542748 8.04516 -0.542748 4.56947 1.62629 2.43257Z" fill="currentColor" />
+                                                                            </svg>
 
                                                                         }
                                                                     </button>
