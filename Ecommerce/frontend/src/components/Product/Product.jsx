@@ -209,6 +209,7 @@ function Product() {
                 toast.success(result.message);
                 setLikes(result.liked);
                 setLikesCount(result.totalLikes)
+                localStorage.setItem("productLikes",JSON.stringify(result.liked));
 
             }
 
