@@ -136,13 +136,19 @@ class ProducController extends Controller
     // SINGLEPRODUCT
     public function getProduct($id)
     {
-        $product = Product::with(['product_images', 'product_sizes'])->findOrFail($id);
+        $product = Product::with(['product_images', 'product_sizes'])->withCount('likes')->findOrFail($id);
+        $liked = false;
+        if (auth()->check()) {
+            $liked = $product->likes()->where('user_id', auth()->id())->exists();
+        }
 
         return response()->json([
             'status' => 200,
             'data' => $product,
+            'liked' => $liked,
+            'likes_count' => $product->likes_count,
         ]);
     }
     // users
-   
+
 }

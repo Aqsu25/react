@@ -57,4 +57,9 @@ class Product extends Model
     {
         return $this->hasMany(Review::class);
     }
+    // likes
+    public function likes()
+    {
+        return $this->morphMany(Like::class, 'likeable');
+    }
 }

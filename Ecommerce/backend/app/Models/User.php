@@ -81,7 +81,7 @@ class User extends Authenticatable
     }
 
     // averagerating
-      public function averageRatings()
+    public function averageRatings()
     {
         return $this->reviews()->avg('rate');
     }
@@ -89,6 +89,6 @@ class User extends Authenticatable
     // likes
     public function likes()
     {
-        return $this->morphMany(Like::class, 'likeable');
+        return $this->hasMany(Like::class);
     }
 }
