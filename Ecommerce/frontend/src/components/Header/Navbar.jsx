@@ -6,8 +6,13 @@ import { faShoppingCart, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { AdminAuthContext } from "../context/AdminAuth";
 import { UserAuthContext } from "../context/UserAuth";
 import { CartContext } from "../context/Cart";
+import { apiUrl } from "../common/Http";
 
 function Navbar() {
+  // serach
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+
 
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -26,6 +31,23 @@ function Navbar() {
   };
 
   const isLoggedIn = adminLogin || userLogin;
+
+  // search
+  const handleSearch = async (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (value.trim().length > 0) {
+      const res = await fetch(
+        `${apiUrl}/products/search?query=${value}`
+      );
+
+      const data = await res.json();
+      setSearchResults(data);
+    } else {
+      setSearchResults([]);
+    }
+  };
 
   return (
     <>
@@ -52,10 +74,9 @@ function Navbar() {
             <NavLink
               to="/"
               className={({ isActive }) =>
-                `transition duration-300 ${
-                  isActive
-                    ? "text-[#007595] border-b-2 border-[#007595]"
-                    : "hover:text-[#007595]"
+                `transition duration-300 ${isActive
+                  ? "text-[#007595] border-b-2 border-[#007595]"
+                  : "hover:text-[#007595]"
                 }`
               }
             >
@@ -65,10 +86,9 @@ function Navbar() {
             <NavLink
               to="/shop"
               className={({ isActive }) =>
-                `transition duration-300${
-                  isActive
-                    ? "text-[#007595] border-b-2 border-[#007595]"
-                    : "hover:text-[#007595]"
+                `transition duration-300${isActive
+                  ? "text-[#007595] border-b-2 border-[#007595]"
+                  : "hover:text-[#007595]"
                 }`
               }
             >
@@ -78,10 +98,9 @@ function Navbar() {
             <NavLink
               to="/contact"
               className={({ isActive }) =>
-                `transition duration-300 ${
-                  isActive
-                    ? "text-[#007595] border-b-2 border-[#007595]"
-                    : "hover:text-[#007595]"
+                `transition duration-300 ${isActive
+                  ? "text-[#007595] border-b-2 border-[#007595]"
+                  : "hover:text-[#007595]"
                 }`
               }
             >
@@ -91,10 +110,9 @@ function Navbar() {
             <NavLink
               to={!adminLogin ? "/user/dashboard" : "/admin/dashboard"}
               className={({ isActive }) =>
-                `transition duration-300 ${
-                  isActive
-                    ? "text-[#007595] border-b-2 border-[#007595]"
-                    : "hover:text-[#007595]"
+                `transition duration-300 ${isActive
+                  ? "text-[#007595] border-b-2 border-[#007595]"
+                  : "hover:text-[#007595]"
                 }`
               }
             >
@@ -110,10 +128,21 @@ function Navbar() {
               <input
                 type="text"
                 placeholder="Search jewelry..."
-                className={`border border-gray-200 bg-white rounded-full px-4 py-1 text-sm outline-none shadow-sm transition-all duration-500 ${
-                  searchOpen ? "w-56 opacity-100 mr-2" : "w-0 opacity-0"
-                }`}
+                value={searchTerm}
+                onChange={handleSearch}
+                className="..."
               />
+              {searchResults.length > 0 && (
+                <div className="search-results bg-white shadow-md">
+                  {searchResults.map((product) => (
+                    <Link to={`/product/${product.id}`} key={product.id}>
+                      <div className="p-2 hover:bg-gray-100">
+                        {product.name}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
 
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
@@ -169,9 +198,8 @@ function Navbar() {
         </div>
 
         <div
-          className={`md:hidden overflow-hidden transition-all duration-500 ${
-            open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`md:hidden overflow-hidden transition-all duration-500 ${open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
 
           <div className="px-6 py-6 bg-gradient-to-b from-[#f7fbfc] to-[#e9f4f6] space-y-4 text-gray-700">

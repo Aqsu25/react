@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Middleware\HandleCors;
 use App\Http\Middleware\CheckAdmin;
 use App\Http\Middleware\CheckUser;
 use Illuminate\Foundation\Application;
@@ -14,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // 👉 This line ensures CORS headers are added to all API responses
+        $middleware->prepend(HandleCors::class);
+
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
@@ -23,9 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'checkAdminRole' => CheckAdmin::class,
             'checkUserRole' => CheckUser::class,
         ]);
-
-        //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->create();

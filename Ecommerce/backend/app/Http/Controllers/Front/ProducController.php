@@ -165,4 +165,17 @@ class ProducController extends Controller
             'likes_count' => $product->likes_count,
         ]);
     }
+
+    // product-search
+
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+
+        $products = Product::where('title', 'LIKE', "%$query%")
+            ->orWhere('description', 'LIKE', "%$query%")
+            ->get();
+
+        return response()->json($products);
+    }
 }

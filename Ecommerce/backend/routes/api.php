@@ -20,6 +20,7 @@ use App\Http\Controllers\TempController;
 use Illuminate\Support\Facades\Route;
 
 // chatbot
+Route::post('/ai/ask', [AIController::class, 'askAI']);
 Route::post('/ai/chat', [AIController::class, 'chat']);
 
 // latest
@@ -44,6 +45,9 @@ Route::get('/comment/{productId}', [FrontUserController::class, 'index']);
 Route::get('/getProduct/{id}', [ProducController::class, 'getProduct']);
 
 Route::get('/product/{id}/reviews', [FrontUserController::class, 'getReviews']);
+
+// navbar-product-search 
+Route::get('/products/search', [ProducController::class, 'search']);
 
 
 Route::group([
